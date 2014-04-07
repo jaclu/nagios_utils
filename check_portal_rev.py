@@ -3,7 +3,7 @@
  check_portal_rev for nagios 
  Copyright 2014: europeana   License: EUPL
  Written by: Jacob.Lundqvist@europeana.eu
- jaclu 2014-04-07 vers 0.1.0
+ jaclu 2014-04-07 vers 0.1.1
  
  Either just displays portal rev, or ensures specific version
 """
@@ -72,7 +72,7 @@ class PortalRev(object):
         
         if not len(self.arguments) == 1:
             print
-            print 'Server must be given'
+            print 'Error: Server must be given'
             sys.exit(1)
         self.server = self.arguments[0]
 
