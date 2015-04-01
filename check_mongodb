@@ -1,13 +1,98 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
-# check_mongodb for nagios 
-# Copyright 2013: europeana.eu   License: EUPL
-# Written by: Jacob.Lundqvist@gmail.com
-# jaclu 2013-09-30 vers 1.1.0
+import os
+import time
 
-import subprocess
-import sys
+from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+#from naglib.timeunits import TimeUnits
 
+import time, os, stat
+
+
+
+
+"""
+MongoEuropeanaCount ~/bin/check_mongodb europeana record
+MongoEuropeana ~/bin/check_mongodb europeana 'db.record.findOne()' 'grep europeanaCollectionName'
+MongoEuropeanaID ~/bin/check_mongodb EuropeanaId EuropeanaID
+#MongoApiLog ~/bin/check_mongodb europeana_apilog logEntries
+"""
+
+
+
+class CheckMongoDb(NagiosPlugin):
+    VERSION = '1.1.0' # added -m mongobin path option
+    DESCRIPTION = "Warns if back-log of thumblr2 files is to large, or oldest file waiting is to old"
+    MSG_LABEL = 'MongoDB'
+    CMD_LINE_HINT = 'database collection/special_query [filter]'
+    HELP = """
+    If second param contains no dot (.) it is assumed to be a collection
+    and test will succeed if this collection has more than zero records.
+
+    If there is a dot this is assumed to be a full query and it will be run as given
+      example: db.record.findOne()
+
+    If a filter option is given, this is piped in after the mongodb call, usefull for a grep or regexp
+        in combination with a special query to verify specific content is available
+        it is assumed a post_cmd will generate output if successfull
+        empty result is assumed to be a failed test
+    """
+
+    def custom_options(self, parser):
+        #parser.add_option("-q", '--query', dest="query", default='')
+        parser.add_option("-u", '--username', dest="username", default='')
+        parser.add_option("-p", '--password', dest="password", default='')
+        parser.add_option("-f", '--filter', dest="filter", default='')
+        parser.add_option("-m", '--mongo', dest="mongo_cmd", default='mongo')
+
+
+    def workload(self):
+        if len(self.args) < 2:
+            self.exit_help('Mandatory param missing')
+        database = self.args[0]
+        query = self.args[1]
+
+        is_record_count = False
+        if query.find('.') == -1:
+            is_record_count = True
+            query = 'db.%s.count()' % query
+
+        cmd = 'echo "%s"|%s --quiet %s' % (self.auth_me() + query, self.options.mongo_cmd, database)
+        if self.options.filter:
+            cmd += ' | %s' % self.options.filter
+        retcode, stdout, stderr = self.cmd_execute_output(cmd)
+        if stderr:
+            self.exit_crit(stderr)
+        elif retcode ==1 and stdout=='':
+            #
+            if cmd.find('grep') > -1:
+                self.exit_crit('grep did not find a match: %s' % self.options.filter)
+            self.exit_crit('cmd failed, no output recieved')
+        elif retcode:
+            self.exit_crit('cmd failed %s' % stdout)
+
+        if is_record_count:
+            try:
+                msg = 'Found %i items' % int(stdout)
+            except:
+                self.exit_crit(stdout)
+        elif self.options.filter and stdout:
+            msg = 'post filter matched'
+        else:
+            self.exit_crit('Other error')
+
+        self.exit_ok(msg)
+
+
+    def auth_me(self):
+        if self.options.username == '' and self.options.password == '':
+            return ''
+        return "db.auth('%s','%s');" % (self.options.username, self.options.password)
+
+
+CheckMongoDb().run()
+
+"""
 arg_count = len (sys.argv) - 1
 
 if not arg_count:
@@ -50,7 +135,11 @@ if arg_count > 2:
     post_cmd = '| %s' % sys.argv[3]
 
 cmd = 'echo "%s" | mongo --quiet %s %s' % (s_input, db, post_cmd)
-p = subprocess.Popen(cmd, 
+if DEBUG:
+    print '*** Cmd that will be run on next line'
+    print cmd
+    print
+p = subprocess.Popen(cmd,
                      shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
 output = p.stdout.readlines()
 p.communicate()
@@ -77,13 +166,21 @@ if post_cmd:
 
 #
 # assuming it was a record count
-#
+#2
 try:
+    # old mongoclient test
     count = int(output[-2])
 except:
-    print 'ERROR: Failed to read record count: %s' % output
-    sys.exit(2)
+    if DEBUG:
+        print '** Old style count parsing failed'
+    try:
+        # starting at vers 2.6.7 this works
+        count = int(output[0].strip())
+    except:
+        print 'ERROR: Failed to read record count: %s' % output
+        sys.exit(2)
 if not count:
     print 'ERROR: zero records found, did you use correct DB name?'
     sys.exit(2)
 print 'OK - %i records' % count
+"""
