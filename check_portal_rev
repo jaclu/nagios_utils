@@ -1,78 +1,59 @@
 #!/usr/bin/python
 """
- check_portal_rev for nagios 
+ check_portal_rev for nagios
  Copyright 2014: europeana   License: EUPL
  Written by: Jacob.Lundqvist@europeana.eu
  jaclu 2014-04-07 vers 0.1.3
- 
+
  Either just displays portal rev, or ensures specific version
 """
 
-from optparse import OptionParser
-import subprocess
-import sys
+
+from naglib.nagiosplugin import NagiosPlugin
 
 
 
 
-class PortalRev(object):
-    
-    def __init__(self):
-        self.cmd_line()
-        
-    def run(self):
-        cmd = 'curl %s/portal/build.txt' % (self.server)
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, 
-                             stderr=subprocess.PIPE, close_fds=True)
-        output = p.stdout.readlines()
-        p.communicate()
-        retcode = p.returncode
+
+class PortalRev(NagiosPlugin):
+    VERSION = '1.0.1' # integrated with NagiosPlugin baseclass
+    DESCRIPTION = "Displays portal version"
+    MSG_LABEL = 'PortVers'
+    CMD_LINE_HINT = 'check_portal_rev host'
+
+    def custom_options(self, parser):
+        parser.add_option("-r", "--revision", dest="revision")
+        parser.add_option("-V", "--vers", dest="vers")
+        parser.add_option("-b", "--build_time", dest="build_time")
+
+    def workload(self):
+        if len(self.args) < 1:
+            self.exit_help('Mandatory param missing')
+        host = self.args[0]
+        cmd = 'curl %s/portal/build.txt' % (host)
+        retcode,stdout,stderr = self.cmd_execute_output(cmd)
         if retcode:
-            print 'ERROR: Command failed (%i): %s' % (retcode, cmd)
-            sys.exit(2)
-            
-        parts = output[0].split()
-        
+            self.exit_crit('Command failed')
+        parts = stdout.split()
+
         rev = parts[1]
         build_time = parts[4] + ' ' + parts[5]
-        version = parts[-1][:-1]
-        
+        version = parts[-3]
+        branch = parts[-1].replace(')','')
+
         if self.options.revision:
             if rev != self.options.revision:
-                print 'ERROR: Revision: %s (expected: %s)' % (rev, self.options.revision)
-                sys.exit(2)
-            
+                self.exit_crit('ERROR: Revision: %s (expected: %s)' % (rev, self.options.revision))
+
         if self.options.build_time:
             if build_time.find(self.options.build_time) < 0:
-                print 'ERROR: Build: %s (expected: %s)' % (build_time, self.options.build_time)
-                sys.exit(2)
-                
+                self.exit_crit('ERROR: Build: %s (expected: %s)' % (build_time, self.options.build_time))
+
         if self.options.vers:
             if version != self.options.vers:
-                print 'ERROR: Version: %s (expected: %s)' % (version, self.options.vers)
-                sys.exit(2)
-                    
-        print 'OK: vers:%s rev:%s build:%s' % (version, rev, build_time)
-        
+                self.exit_crit('ERROR: Version: %s (expected: %s)' % (version, self.options.vers))
+
+        self.exit_ok('OK: vers:%s branch:%s rev:%s build:%s' % (version, branch, rev, build_time))
 
 
-    def cmd_line(self):
-        parser = OptionParser()
-        usage = "usage: %prog [options] arg1 arg2"
-        parser.add_option("-r", "--revision", 
-                          dest="revision")
-        parser.add_option("-v", "--vers", 
-                          dest="vers")
-        parser.add_option("-b", "--build_time", 
-                          dest="build_time")
-        self.options, self.arguments = parser.parse_args()
-        
-        if not len(self.arguments) == 1:
-            print
-            print 'ERROR: Server must be given'
-            sys.exit(1)
-        self.server = self.arguments[0]
-
-
-pr = PortalRev()
-pr.run()
+PortalRev().run()
