@@ -1,0 +1,179 @@
+#!/usr/bin/env python
+
+import glob
+import os
+import time
+import sys
+
+from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.timeunits import TimeUnits
+
+
+
+class CheckFileAgeUnits(NagiosPlugin):
+    VERSION = '3.4.1'  # 2015-03-25 jaclu added perfdata
+    HELP = """
+Similar to standard plugin check_file_age, but here we can use units and not only use seconds
+  defaul is seconds
+    m   minutes
+    h   hours
+    d   days
+    w   weeks
+    m   months
+
+  result will use same unit, no fractions only integer params like:
+    12m    interperete as 12 minutes.
+
+   -o --oldest if given selects oldest file matching filepath param
+   -n --newest if given selects most recent file matching filepath param
+
+   Currently -o / -n must point to a directory, comming versions should also
+   support wildcarding a subset of the files in a directory
+"""
+    MSG_LABEL = 'FILE_AGE'
+    CMD_LINE_HINT = 'filepath'
+    ARGC = '1' # * = 0 or larger, n = exact match, 2+ two or more, 1-3 one to three
+
+
+    def custom_options(self, parser):
+        parser.add_option('-w', dest='age_warn')
+        parser.add_option('-c', dest='age_crit')
+        parser.add_option('-s', '--size-min', dest='size_min', default=-1, type="int",
+                          help='minimal size of file that is accepted')
+        parser.add_option('-S', '--size-max', dest='size_max', default=-1, type="int",
+                          help='maximum size of file that is accepted')
+        parser.add_option("-W", '--warn-on-missing', action="store_true", dest="missing_warn", default=False)
+        parser.add_option("-o", '--oldest', action="store_true", dest="oldest", default=False,
+                          help='if given selects oldest file matching filename')
+        parser.add_option("-n", '--newest', action="store_true", dest="newest", default=False,
+                          help='if given selects most recent file matching filename')
+
+    def workload(self):
+        self.path_arg = self.args.pop()
+        if self.options.newest and self.options.oldest:
+            self.exit_help('Cant specify both oldest and newest - maximum one of them!')
+        elif self.options.newest or self.options.oldest:
+            #self.check_sorted_path()
+            self.check_directory()
+        else:
+            self.check_one_file(self.path_arg)
+
+    def check_one_file(self, fname):
+
+        if not self.options.age_crit:
+            self.exit_crit( '-c options must be specified!')
+
+        if self.options.age_warn:
+            try:
+                warn = TimeUnits(self.options.age_warn)
+            except:
+                self.exit_help('invalid syntax for option -w: %s' % self.options.age_warn)
+        else:
+            warn = None
+
+        try:
+            crit = TimeUnits(self.options.age_crit)
+        except:
+            self.exit_help('invalid syntax for option -c: %s' % self.options.age_crit)
+
+        self.log('file to check: %s' % fname, 1)
+        if warn:
+            self.log('warn level: %s' % warn.get(), 1)
+        self.log('crit level: %s' % crit.get(), 1)
+        if warn and (warn >= crit):
+            self.exit_crit( 'warning age must be less than critical age')
+        if not os.path.exists(fname):
+            if self.options.missing_warn:
+                lvl = NAG_WARNING
+            else:
+                lvl = NAG_CRITICAL
+            self.exit(lvl, 'File not found: %s' % fname)
+        last_changed = os.stat(fname).st_mtime
+        self.log('last changed timestamp for file: %s' % last_changed,2)
+        age = TimeUnits(time.time() - last_changed)
+        self.add_perf_data('age', age.value, warn.value, crit.value, 0)
+        self.log('File age: %s' % age, 2)
+        msg = '%s is %s old' % (fname, age.get())
+        self.ensure_size_is_ok(fname)
+        if age > crit:
+            code = NAG_CRITICAL
+        elif warn and (age > warn):
+            code = NAG_WARNING
+        else:
+            code = NAG_OK
+        self.exit(code, msg)
+
+
+    def check_sorted_path(self):
+        f = self.path_arg
+        self.log('check_sorted_path(%s)' % f, lvl=1)
+        files = sorted(glob.glob(f))
+        if self.options.oldest:
+            fname = files[0]
+        else:
+            fname = files[-1]
+        return fname
+
+
+
+    def check_directory(self):
+        #
+        f = self.path_arg
+        self.log('check_directory(%s)' % f, lvl=1)
+        if f[-1] == os.path.sep:
+            wd = os.path.dirname(f)
+        elif os.path.isdir(f):
+            wd = f
+        else:
+            self.exit_help('If -o or -n is used argument needs to be a directory')
+
+        self.log('Will examine the following dir: %s' % wd, 3)
+        os.chdir(wd)
+        fname = self.safe_file_find_in_dir(wd)
+        full_name = os.path.join(wd, fname)
+        self.log('After checking a directory %s was chosen' % full_name, lvl=3)
+        self.check_one_file(full_name)
+
+
+    def safe_file_find_in_dir(self, wd):
+        if 0:#sys.version >= '2.5':
+            try:
+                if self.options.oldest:
+                    fname = min(os.listdir(wd), key=os.path.getmtime)
+                else:
+                    fname = max(os.listdir(wd), key=os.path.getmtime)
+            except OSError, e:
+                self.exit_crit( 'OSError: %s' % e)
+            except:
+                self.exit_crit( 'os.listdir() failed')
+        else:
+            # older python on some of our servers...
+            files = sorted(os.listdir(wd), key=os.path.getmtime)
+            if self.options.oldest:
+                fname = files[0]
+            else:
+                fname = files[-1]
+        return fname
+
+    def ensure_size_is_ok(self, fname):
+        size = os.path.getsize(fname)
+        if self.options.size_min != -1:
+            min_value = '%i' % self.options.size_min
+        else:
+            min_value = ''
+
+        if self.options.size_max != -1:
+            max_value = '%i' % self.options.size_max
+        else:
+            max_value = ''
+
+        if (self.options.size_min > -1) and (size < self.options.size_min):
+            self.exit_crit( '%s size (%i) under min: %i' % (fname, size, self.options.size_min))
+        elif (self.options.size_max > -1) and (size > self.options.size_max):
+                self.exit_crit( '%s size (%i) over max: %i' % (fname, size, self.options.size_max))
+        return True
+
+
+
+CheckFileAgeUnits().run()
+
