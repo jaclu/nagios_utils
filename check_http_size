@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+"""
+If you cant install the nagios check_http you can use this instead...
+
+"""
+
+import time
+import urllib2
+
+from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
+
+
+
+class CheckHttpSize(NagiosPlugin):
+    VERSION = '1.0.0'
+    DESCRIPTION = "Checks that requested document size is within bounds"
+    MSG_LABEL = 'DOC_SIZE'
+    CMD_LINE_HINT = 'url'
+    HELP = """
+    At least one of -w or -c must be given, and the notation is min:max
+    Any size outside this will trigger an alarm.
+    
+    If response is not recieved within timeout period, an alarm is triggered
+    """
+
+    def custom_options(self, parser):
+        parser.add_option("-w", '--warning', dest="warning", help="syntax:  min:max")
+        parser.add_option("-c", '--critical', dest="critical", help="syntax:  min:max")
+        parser.add_option("-t", '--timeout', dest="timeout", default=10, type="int")
+
+    def workload(self):
+        if len(self.args) < 1:
+            self.exit_help('Mandatory param missing')
+        url = self.args[0]
+        if not (self.options.warning or self.options.critical):
+            self.exit_help('-w or -c must be given')
+            
+        if self.options.warning:
+            w1, w2 = self.verify_size_span(self.options.warning,'warning')
+            
+        if self.options.critical:
+            c1, c2 = self.verify_size_span(self.options.critical,'critical')
+                
+        doc = self.check_url(url,timeout=self.options.timeout)
+        size = len(doc)
+        if self.options.critical:
+            if size < c1 or size > c2:
+                self.exit_crit('%i is out of range' % size)
+        if self.options.warning:
+            if size < w1 or size > w2:
+                self.exit_warn('%i is out of range' % size)
+            
+        self.exit(NAG_OK, 'Acceptable doc size: %i' % size)
+
+
+    def check_url(self, url, s_expect='', timeout=10):
+        t1 = time.time()
+        try:
+            f = urllib2.urlopen(url, timeout=timeout)
+        except urllib2.HTTPError, e:
+            self.exit_crit('HTTP error:%i - %s' % (e.code,e.msg))
+        except:
+            if time.time() > t1 + timeout:
+                self.exit_crit('timeout!')
+            self.exit_crit( 'unknwon failure processing url')
+        if f.code != 200:
+            self.exit_crit( '%s %s' % (f.code, f.msg))
+        content = f.read()
+        if s_expect and (content.find(s_expect) < 0):
+            self.exit_crit( '%s not found' % s_expect)
+        return content
+    
+    
+    def verify_size_span(self, param, label):
+        try:
+            parts = param.split(':')
+        except:
+            self.exit_help('bad syntax for %s - %s' % (label, param))
+        if not len(parts) == 2:
+            self.exit_help('there should be exactly 2 numbers given for %s - %s' % (label, param))
+        m1 = parts[0]
+        m2 = parts[1]
+        try:
+            m1 = int(m1)
+        except:
+            self.exit_help('value (%s) is not a number, %s - %s' % (m1, label, param))        
+        try:        
+            m2 = int(m2)
+        except:
+            self.exit_help('value (%s) is not a number, %s - %s' % (m2, label, param))
+        if m1 >= m2:
+            self.exit_help('second number must be larger than first, %s - %s' % (label, param))
+            
+        return m1, m2
+            
+
+CheckHttpSize().run()
+
