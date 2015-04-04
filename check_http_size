@@ -12,7 +12,7 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
 class CheckHttpSize(NagiosPlugin):
-    VERSION = '1.0.3'
+    VERSION = '1.0.4'
     DESCRIPTION = "Checks that requested document size is within bounds"
     MSG_LABEL = 'DOC_SIZE'
     CMD_LINE_HINT = 'url'
@@ -59,7 +59,7 @@ class CheckHttpSize(NagiosPlugin):
             size_min = '' # never use size 0 in perf data
         if size_max == 0:
             size_max = '' # never use size 0 in perf data
-        self.add_perf_data('size', size, minimum=size_min, maximum=size_max)
+        self.add_perf_data('size', size 0) #, minimum=size_min, maximum=size_max)
         if self.options.critical:
             if size < c1 or size > c2:
                 self.exit_crit('%i is out of range' % size)
