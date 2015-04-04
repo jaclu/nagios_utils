@@ -12,7 +12,7 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
 class CheckHttpSize(NagiosPlugin):
-    VERSION = '1.0.0'
+    VERSION = '1.0.3'
     DESCRIPTION = "Checks that requested document size is within bounds"
     MSG_LABEL = 'DOC_SIZE'
     CMD_LINE_HINT = 'url'
@@ -29,6 +29,7 @@ class CheckHttpSize(NagiosPlugin):
         parser.add_option("-t", '--timeout', dest="timeout", default=10, type="int")
 
     def workload(self):
+        size_min = size_max = 0
         if len(self.args) < 1:
             self.exit_help('Mandatory param missing')
         url = self.args[0]
@@ -37,12 +38,28 @@ class CheckHttpSize(NagiosPlugin):
             
         if self.options.warning:
             w1, w2 = self.verify_size_span(self.options.warning,'warning')
+            size_min = w1
+            size_max = w2
             
         if self.options.critical:
             c1, c2 = self.verify_size_span(self.options.critical,'critical')
+            if size_min:
+                size_min = min(size_min, c1)
+            else:
+                size_min = c1                
+            if size_max:
+                size_max = max(size_max, c2)
+            else:
+                size_max = c2
                 
         doc = self.check_url(url,timeout=self.options.timeout)
         size = len(doc)
+        
+        if size_min == 0:
+            size_min = '' # never use size 0 in perf data
+        if size_max == 0:
+            size_max = '' # never use size 0 in perf data
+        self.add_perf_data('size', size, minimum=size_min, maximum=size_max)
         if self.options.critical:
             if size < c1 or size > c2:
                 self.exit_crit('%i is out of range' % size)
