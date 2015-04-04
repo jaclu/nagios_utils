@@ -30,6 +30,7 @@ class CheckHttpSize(NagiosPlugin):
 
     def workload(self):
         size_min = size_max = 0
+        size_warn = size_crit = ''
         if len(self.args) < 1:
             self.exit_help('Mandatory param missing')
         url = self.args[0]
@@ -40,9 +41,11 @@ class CheckHttpSize(NagiosPlugin):
             w1, w2 = self.verify_size_span(self.options.warning,'warning')
             size_min = w1
             size_max = w2
+            size_warn = w2
             
         if self.options.critical:
             c1, c2 = self.verify_size_span(self.options.critical,'critical')
+            size_crit = c2
             if size_min:
                 size_min = min(size_min, c1)
             else:
@@ -59,7 +62,7 @@ class CheckHttpSize(NagiosPlugin):
             size_min = '' # never use size 0 in perf data
         if size_max == 0:
             size_max = '' # never use size 0 in perf data
-        self.add_perf_data('size', size 0) #, minimum=size_min, maximum=size_max)
+        self.add_perf_data('size', size, warning=size_warn, critical=size_crit) #, minimum=size_min, maximum=size_max)
         if self.options.critical:
             if size < c1 or size > c2:
                 self.exit_crit('%i is out of range' % size)
