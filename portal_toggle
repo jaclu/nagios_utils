@@ -1,0 +1,100 @@
+#!/usr/bin/python
+
+from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+
+TASK_LIST = 'list'
+TASK_TOGGLE = 'toggle'
+VERBS = (TASK_LIST, TASK_TOGGLE)
+
+
+
+class PortalToggler(NagiosPlugin):
+    VERSION = '1.0.2'
+    DESCRIPTION = "lists/toggles production portal"
+    MSG_LABEL = 'PORTAL_TOGGLER'
+    CMD_LINE_HINT = 'list / toggle'
+    HELP = """
+    list          show what app is currently handling production
+    toggle        switches to other app after first verifying it is responsive
+                  then restarts retired app
+
+    """
+
+
+    def custom_options(self, parser):
+        parser.add_option("-C", '--command', dest='command', default='cf')
+        parser.add_option('-P', '--prefix', dest='plugin_prefix', default='/usr/local/nagiosplugins')
+
+    def workload(self):
+        if len(self.args) != 1:
+            self.exit_crit( 'exactly one task must be suplied as param')
+        task = self.args.pop()
+        if task not in VERBS:
+            self.exit_crit('invalid task: %s' % task)
+
+        active, passive = self.task_list()
+        if not active:
+            self.exit_crit('Production environ does not seem to be running')
+        msg = 'Currently %s is active' % active
+        if task == TASK_LIST:
+            self.exit_ok(msg)
+        self.log(msg,1)
+
+        #
+        # Asume task is toggle...
+        #
+
+        #
+        # check that "other" is doing good, this call exits with error if other is not sane
+        # for instance if re-run before portal has become stable
+        #
+        for app in ('portal', 'api', 'web'):
+            app_name = '%s-%s' % (passive, app)
+            self.log('will check if %s is looking good' % app_name, 1)
+            cmd = '%s/check_cf_app %s -s production -c 399 -w 150 -i 3' % (self.options.plugin_prefix, app_name)
+
+            retcode, stdout, stderr = self.cmd_execute_output(cmd)
+            if stderr:
+                self.exit(NAG_CRITICAL, 'Errormsg: %s' % stderr)
+            if retcode:
+                self.exit(NAG_CRITICAL, 'Errorstatus: %s' % stdout)
+            self.log('\t%s seems ok' % app_name, 1)
+
+        #
+        # Do the actual switchover
+        #
+        cmd = '~/bin/activate-environ %s' % passive
+        self.log('will now toggle production to %s' % passive, 1)
+        stdout = self.cmd_execute_abort_on_error(cmd)
+
+        #
+        #  Restart the now passive app(-s)
+        #
+        for app in ('portal',
+                    #'api', 'web'
+                    ):
+            app_name = '%s-%s'  % (active, app)
+            self.log('restarting retired %s' % app_name, 1)
+            cmd = '%s restart %s' % (self.options.command, app_name)
+            stdout = self.cmd_execute_abort_on_error(cmd, timeout=60)
+        self.exit_ok('portal toggled sccessfully')
+
+
+    def task_list(self):
+        cmd = '%s routes' % self.options.command
+        self.log('Checking routes',1)
+        stdout = self.cmd_execute_abort_on_error(cmd)
+        for line in stdout.split('\n'):
+            if line.find('www') > -1 and line.find('europeana.eu') > -1:
+                active = line.split()[-1].split('-')[0]
+                break
+
+        if active == 'blue':
+            passive = 'green'
+        else:
+            passive = 'blue'
+        return active, passive
+
+
+
+PortalToggler().run()
