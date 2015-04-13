@@ -9,7 +9,7 @@ VERBS = (TASK_LIST, TASK_TOGGLE)
 
 
 class PortalToggler(NagiosPlugin):
-    VERSION = '1.0.2'
+    VERSION = '1.0.3'
     DESCRIPTION = "lists/toggles production portal"
     MSG_LABEL = 'PORTAL_TOGGLER'
     CMD_LINE_HINT = 'list / toggle'
@@ -28,6 +28,8 @@ class PortalToggler(NagiosPlugin):
     def workload(self):
         if len(self.args) != 1:
             self.exit_crit( 'exactly one task must be suplied as param')
+        if not self.options.verbose:
+            self.options.verbose = 1
         task = self.args.pop()
         if task not in VERBS:
             self.exit_crit('invalid task: %s' % task)
