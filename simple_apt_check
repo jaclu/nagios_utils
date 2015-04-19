@@ -30,15 +30,15 @@ try:
     crit_count = int(crits.split()[0])
     reg_count = int(relevant_line.split()[0])
 except:
-    print 'CRITICAL: cmd failed'
+    print 'cmd failed'
     sys.exit(2)
 
 if crit_count:
-    print 'WARNING: %s' % crits
+    print '%s' % crits
     sys.exit(1)
 
 if 0:# reg_count:
-    print 'WARNING: %s' % relevant_line
+    print '%s' % relevant_line
     sys.exit(1)
     
-print 'OK: %s' % relevant_line
+print '%s' % relevant_line

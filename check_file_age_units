@@ -93,7 +93,7 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         age = TimeUnits(time.time() - last_changed)
         self.add_perf_data('age', age.value, warn.value, crit.value, 0)
         self.log('File age: %s' % age, 2)
-        msg = '%s is %s old' % (fname, age.get())
+        msg = 'Age of file %s is %s' % (fname, age.get())
         self.ensure_size_is_ok(fname)
         if age > crit:
             code = NAG_CRITICAL
