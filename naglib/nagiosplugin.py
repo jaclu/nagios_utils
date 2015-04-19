@@ -335,7 +335,8 @@ class NagiosPlugin(SubProcessTask):
 
         #print '%s: %s' % (s_code, msg)
         print msg
-        raise SystemExit, code
+        sys.exit(code)
+        #raise SystemExit, code
 
 
 

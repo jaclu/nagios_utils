@@ -11,7 +11,7 @@ from naglib.timeunits import TimeUnits
 
 
 class CheckFileAgeUnits(NagiosPlugin):
-    VERSION = '3.4.1'  # 2015-03-25 jaclu added perfdata
+    VERSION = '3.4.2'  # 2015-04-19 jaclu trying to fix "Check output not found in output of MRPE" error
     HELP = """
 Similar to standard plugin check_file_age, but here we can use units and not only use seconds
   defaul is seconds
