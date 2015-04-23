@@ -16,7 +16,7 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
 class SolrCount(NagiosPlugin):
-    VERSION = '1.0.0'
+    VERSION = '1.0.1'
     DEFAULT_REL_URL = '/solr/search/select?q=*:*&rows=0'
     CMD_LINE_HINT  ='url itemcount'
     HELP = """
@@ -48,7 +48,7 @@ class SolrCount(NagiosPlugin):
         content = self.check_url(url)
         remote_count = self.extract_actual_count(content)
         if count != remote_count:
-            self.exit_crit('Expected %i items, found %i' % (count, remote_count))
+            self.exit_crit('Expected %i items, found %i - diff %i' % (count, remote_count, remote_count - count))
         t2 = time.time() - t1
         self.add_perf_data('response time', t2)
         self.exit(NAG_OK, 'Itemcount as expected: %i' % count)
