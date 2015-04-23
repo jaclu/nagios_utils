@@ -21,7 +21,7 @@ MongoEuropeanaID ~/bin/check_mongodb EuropeanaId EuropeanaID
 
 
 class CheckMongoDb(NagiosPlugin):
-    VERSION = '1.1.1' # added -m mongobin path option
+    VERSION = '1.1.2'
     DESCRIPTION = "Warns if back-log of thumblr2 files is to large, or oldest file waiting is to old"
     MSG_LABEL = 'MongoDB'
     CMD_LINE_HINT = 'database collection/special_query [filter]'
@@ -39,7 +39,6 @@ class CheckMongoDb(NagiosPlugin):
     """
 
     def custom_options(self, parser):
-        #parser.add_option("-q", '--query', dest="query", default='')
         parser.add_option("-u", '--username', dest="username", default='')
         parser.add_option("-p", '--password', dest="password", default='')
         parser.add_option("-f", '--filter', dest="filter", default='')
