@@ -12,7 +12,7 @@ from naglib.timeunits import TimeUnits
 
 
 class CheckMysqlTimeStampAge(NagiosPlugin):
-    VERSION = '0.10'
+    VERSION = '0.1.1'
     HELP = """
 Similar to standard plugin check_file_age, but here we can use units and not only use seconds
   defaul is seconds
@@ -21,18 +21,18 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
     d   days
     w   weeks
     m   months
-    
+
   result will use same unit, no fractions only integer params like:
-    12m    interperete as 12 minutes, 
+    12m    interperete as 12 minutes,
 """
     MSG_LABEL = 'FILE_AGE'
-    
+
     def custom_options(self, parser):
         parser.add_option('-w', dest='age_warn')
         parser.add_option('-c', dest='age_crit')
         parser.add_option('-m', dest='query', help='mysql query to run')
         parser.add_option('-d', dest='db', help='mysql database')
-        
+
     def workload(self):
         if not self.options.query:
             self.exit_crit( '-m option must be specified!')
@@ -60,6 +60,8 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
             code = NAG_WARNING
         else:
             code = NAG_OK
-        self.exit(code, msg) 
-CheckMysqlTimeStampAge().run()
+        self.exit(code, msg)
+
+if __name__ == "__main__":
+    CheckMysqlTimeStampAge().run()
 

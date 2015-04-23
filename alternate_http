@@ -50,5 +50,6 @@ class CheckHttp(NagiosPlugin):
             self.exit_crit( '%s not found' % s_expect)
 
 
-CheckHttp().run()
+if __name__ == "__main__":
+    CheckHttp().run()
 

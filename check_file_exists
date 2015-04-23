@@ -56,5 +56,8 @@ Returns critical if file is missing
         self.add_perf_data('found', perf_value, '','','0','100')
         self.exit(result, msg % fname)
 
-CheckFileExists().run()
+
+
+if __name__ == "__main__":
+    CheckFileExists().run()
 

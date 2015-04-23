@@ -54,7 +54,7 @@ Monitors a cloud fusion app for important stats
                 continue
             inst_count += 1
             parts = line.split()
-            
+
             status = parts[1]
             if status == 'running':
                 run_count += 1
@@ -101,6 +101,9 @@ Monitors a cloud fusion app for important stats
             if not esc_mode:
                 line += c
         return line.strip()
-        
 
-CheckCfApp().run()
+
+
+
+if __name__ == "__main__":
+    CheckCfApp().run()

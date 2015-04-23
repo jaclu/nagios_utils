@@ -9,7 +9,7 @@ from naglib.timeunits import TimeUnits
 
 
 class CheckFileAgeUnits(NagiosPlugin):
-    VERSION = '1.00'
+    VERSION = '1.0.1'
     HELP = """
 Runs a command with numerical output, and ensures result are in an acceptable
 span (number is parsed as a float).
@@ -72,5 +72,6 @@ span (number is parsed as a float).
         return r
 
 
-CheckFileAgeUnits().run()
+if __name__ == "__main__":
+    CheckFileAgeUnits().run()
 
