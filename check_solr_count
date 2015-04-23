@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-If you cant install the nagios check_http you can use this instead...
-
+DEPRECATED! use the more generic check_solr instead!
+this plugin is no longer maintained...
 """
 
 import time
@@ -20,6 +20,12 @@ class SolrCount(NagiosPlugin):
     DEFAULT_REL_URL = '/solr/search/select?q=*:*&rows=0'
     CMD_LINE_HINT  ='url itemcount'
     HELP = """
+
++=========================================================+
+!    DEPRECATED use the more generic check_solr instead!  !
+!    this plugin is no longer maintained...               !
++=========================================================+
+
     if only http://adr[:port] is used
 
        %s
