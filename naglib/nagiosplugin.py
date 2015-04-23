@@ -176,7 +176,6 @@ class SubProcessTask(GenericRunner):
             t_fin = time.time() + timeout
             p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             while p.poll() == None and t_fin > time.time():
-                self._cmd_purge_io_buffers(p)
                 time.sleep(0.1)
 
             if p.poll() == None:
@@ -271,7 +270,7 @@ class NagiosPlugin(SubProcessTask):
       Sample item: ('load1', '1.150', '2.000', '5.000','0')
     """
 
-    BASE_VERSION = '1.5.0'  # split this up in three subclasses
+    BASE_VERSION = '1.5.1'  # split this up in three subclasses
     VERSION = BASE_VERSION
     MSG_LABEL = '' # optional prefix for the message line
 
