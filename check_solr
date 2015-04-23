@@ -13,7 +13,7 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
 class CheckSolr(NagiosPlugin):
-    VERSION = '1.1.1'
+    VERSION = '1.1.2'
     DEFAULT_REL_URL = '/solr/search/select?q=*:*&rows=0'
     CMD_LINE_HINT  ='url'
     HELP = """
@@ -74,6 +74,8 @@ class CheckSolr(NagiosPlugin):
             f = urllib2.urlopen(url, timeout=timeout)
         except urllib2.HTTPError, e:
             self.exit_crit('HTTP error:%i - %s' % (e.code,e.msg))
+        except urllib2.URLError, e:
+            self.exit_crit('URL error: %s' % e.reason)
         except httplib.BadStatusLine, e:
             if not e.line == 3:
                 self.exit_crit('No response - server down?')
