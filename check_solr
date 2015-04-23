@@ -2,7 +2,7 @@
 
 
 import time
-import urllib2
+import urllib2, httplib
 try:
     from urllib.parse import urlparse
 except:
@@ -13,7 +13,7 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
 class CheckSolr(NagiosPlugin):
-    VERSION = '1.1.0'
+    VERSION = '1.1.1'
     DEFAULT_REL_URL = '/solr/search/select?q=*:*&rows=0'
     CMD_LINE_HINT  ='url'
     HELP = """
@@ -74,12 +74,17 @@ class CheckSolr(NagiosPlugin):
             f = urllib2.urlopen(url, timeout=timeout)
         except urllib2.HTTPError, e:
             self.exit_crit('HTTP error:%i - %s' % (e.code,e.msg))
+        except httplib.BadStatusLine, e:
+            if not e.line == 3:
+                self.exit_crit('No response - server down?')
+            else:
+                self.exit_crit('Unknown error: %s' % e)
         except:
             if time.time() > t1 + timeout:
                 self.exit_crit('timeout')
             self.exit_crit( 'unknwon failure processing url - maybe not responding?')
         if f.code != 200:
-            self.exit_crit( '%s %s' % (f.code, f.msg))
+            self.exit_crit( 'Bad response: %s %s' % (f.code, f.msg))
         content = f.read()
         return content
 

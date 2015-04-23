@@ -12,14 +12,14 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
 class CheckHttpSize(NagiosPlugin):
-    VERSION = '1.0.4'
+    VERSION = '1.0.5'
     DESCRIPTION = "Checks that requested document size is within bounds"
     MSG_LABEL = 'DOC_SIZE'
     CMD_LINE_HINT = 'url'
     HELP = """
     At least one of -w or -c must be given, and the notation is min:max
     Any size outside this will trigger an alarm.
-    
+
     If response is not recieved within timeout period, an alarm is triggered
     """
 
@@ -36,28 +36,28 @@ class CheckHttpSize(NagiosPlugin):
         url = self.args[0]
         if not (self.options.warning or self.options.critical):
             self.exit_help('-w or -c must be given')
-            
+
         if self.options.warning:
             w1, w2 = self.verify_size_span(self.options.warning,'warning')
             size_min = w1
             size_max = w2
             size_warn = w2
-            
+
         if self.options.critical:
             c1, c2 = self.verify_size_span(self.options.critical,'critical')
             size_crit = c2
             if size_min:
                 size_min = min(size_min, c1)
             else:
-                size_min = c1                
+                size_min = c1
             if size_max:
                 size_max = max(size_max, c2)
             else:
                 size_max = c2
-                
+
         doc = self.check_url(url,timeout=self.options.timeout)
         size = len(doc)
-        
+
         if size_min == 0:
             size_min = '' # never use size 0 in perf data
         if size_max == 0:
@@ -69,7 +69,7 @@ class CheckHttpSize(NagiosPlugin):
         if self.options.warning:
             if size < w1 or size > w2:
                 self.exit_warn('%i is out of range' % size)
-            
+
         self.exit(NAG_OK, 'Acceptable doc size: %i' % size)
 
 
@@ -89,8 +89,8 @@ class CheckHttpSize(NagiosPlugin):
         if s_expect and (content.find(s_expect) < 0):
             self.exit_crit( '%s not found' % s_expect)
         return content
-    
-    
+
+
     def verify_size_span(self, param, label):
         try:
             parts = param.split(':')
@@ -103,16 +103,17 @@ class CheckHttpSize(NagiosPlugin):
         try:
             m1 = int(m1)
         except:
-            self.exit_help('value (%s) is not a number, %s - %s' % (m1, label, param))        
-        try:        
+            self.exit_help('value (%s) is not a number, %s - %s' % (m1, label, param))
+        try:
             m2 = int(m2)
         except:
             self.exit_help('value (%s) is not a number, %s - %s' % (m2, label, param))
         if m1 >= m2:
             self.exit_help('second number must be larger than first, %s - %s' % (label, param))
-            
-        return m1, m2
-            
 
-CheckHttpSize().run()
+        return m1, m2
+
+
+if __name__ == "__main__":
+    CheckHttpSize().run()
 
