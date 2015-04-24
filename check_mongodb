@@ -11,17 +11,9 @@ import tempfile
 
 
 
-"""
-MongoEuropeanaCount ~/bin/check_mongodb europeana record
-MongoEuropeana ~/bin/check_mongodb europeana 'db.record.findOne()' 'grep europeanaCollectionName'
-MongoEuropeanaID ~/bin/check_mongodb EuropeanaId EuropeanaID
-#MongoApiLog ~/bin/check_mongodb europeana_apilog logEntries
-"""
-
-
 
 class CheckMongoDb(NagiosPlugin):
-    VERSION = '1.2.0'
+    VERSION = '1.2.1'
     DESCRIPTION = "Warns if back-log of thumblr2 files is to large, or oldest file waiting is to old"
     MSG_LABEL = 'MongoDB'
     CMD_LINE_HINT = 'database collection/special_query [filter]'
