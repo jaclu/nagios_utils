@@ -7,7 +7,7 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
 #from naglib.timeunits import TimeUnits
 
 import time, os, stat
-
+import tempfile
 
 
 
@@ -21,7 +21,7 @@ MongoEuropeanaID ~/bin/check_mongodb EuropeanaId EuropeanaID
 
 
 class CheckMongoDb(NagiosPlugin):
-    VERSION = '1.1.2'
+    VERSION = '1.2.0'
     DESCRIPTION = "Warns if back-log of thumblr2 files is to large, or oldest file waiting is to old"
     MSG_LABEL = 'MongoDB'
     CMD_LINE_HINT = 'database collection/special_query [filter]'
@@ -56,10 +56,22 @@ class CheckMongoDb(NagiosPlugin):
             is_record_count = True
             query = 'db.%s.count()' % query
 
-        cmd = 'echo "%s"|%s --quiet %s' % (self.auth_me() + query, self.options.mongo_cmd, database)
+        f = tempfile.NamedTemporaryFile(prefix="check_mongodb-")
+        auth = self.auth_me()
+        if auth:
+            f.write('use admin\n')
+            f.write('%s\n' % auth)
+        f.write('use %s\n' % database)
+        f.write('%s\n' % query)
+
+        f.flush()
+        print f.name
+        cmd = 'cat "%s"|%s --quiet' % (f.name, self.options.mongo_cmd)
+
         if self.options.filter:
             cmd += ' | %s' % self.options.filter
         retcode, stdout, stderr = self.cmd_execute_output(cmd)
+        f.close()
         if stderr:
             self.exit_crit(stderr)
         elif retcode ==1 and stdout=='':
@@ -70,11 +82,15 @@ class CheckMongoDb(NagiosPlugin):
         elif retcode:
             self.exit_crit('cmd failed %s' % stdout)
 
+        if self.options.filter:
+            output = stdout.strip()
+        else:
+            output = '\n'.join(stdout.split('\n')[3:]).strip()
         if is_record_count:
             try:
-                msg = 'Found %i items' % int(stdout)
+                msg = 'Found %i items' % int(output)
             except:
-                self.exit_crit(stdout)
+                self.exit_crit(output)
         elif self.options.filter and stdout:
             msg = 'post filter matched'
         else:
@@ -86,7 +102,7 @@ class CheckMongoDb(NagiosPlugin):
     def auth_me(self):
         if self.options.username == '' and self.options.password == '':
             return ''
-        return "db.auth('%s','%s');" % (self.options.username, self.options.password)
+        return "db.auth('%s','%s')" % (self.options.username, self.options.password)
 
 
 if __name__ == "__main__":
