@@ -21,7 +21,7 @@ VERBS = (TASK_LIST, TASK_TOGGLE)
 
 
 class PortalToggler(NagiosPlugin):
-    VERSION = '2.0.0'
+    VERSION = '2.0.1'
     DESCRIPTION = "lists/toggles production portal"
     MSG_LABEL = 'PORTAL_TOGGLER'
     CMD_LINE_HINT = 'list / toggle'
@@ -77,7 +77,7 @@ class PortalToggler(NagiosPlugin):
         #
         self.activate_stack(group=initially_active, startup=False)
 
-        self.exit_ok('portal toggled sccessfully')
+        self.exit_ok('portal toggled sccessfully, %s is now active' % passive)
 
 
 
