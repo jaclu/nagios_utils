@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+from exceptions import StandardError
 import inspect
 from optparse import OptionParser, IndentedHelpFormatter
 import os.path
@@ -199,10 +201,10 @@ class SubProcessTask(GenericRunner):
 
 
 
-    def cmd_execute1(self, cmd):
+    def cmd_execute1(self, cmd, timeout=PROC_TIMEOUT):
         "Returns 0 on success, or error message on failure."
         result = 0
-        retcode, stdout, stderr = self.cmd_execute_output(cmd)
+        retcode, stdout, stderr = self.cmd_execute_output(cmd, timeout)
         if retcode or stdout or stderr:
             result = u'retcode: %s' % retcode
             if stdout:
@@ -210,6 +212,14 @@ class SubProcessTask(GenericRunner):
             if stderr:
                 result += u'\nstderr: %s' % stderr
         return result
+
+
+
+    def cmd_execute_raise_on_error(self, cmd, timeout=PROC_TIMEOUT):
+        retcode, stdout, stderr = self.cmd_execute_output(cmd, timeout)
+        if retcode or stderr:
+            raise StandardError('cmd [%s] failed' % cmd)
+        return True
 
 
 
@@ -270,7 +280,7 @@ class NagiosPlugin(SubProcessTask):
       Sample item: ('load1', '1.150', '2.000', '5.000','0')
     """
 
-    BASE_VERSION = '1.5.1'  # split this up in three subclasses
+    BASE_VERSION = '1.6.0'
     VERSION = BASE_VERSION
     MSG_LABEL = '' # optional prefix for the message line
 
@@ -332,8 +342,11 @@ class NagiosPlugin(SubProcessTask):
 
             msg += '; '.join(perfs) + ';'
 
-        #print '%s: %s' % (s_code, msg)
-        print msg
+
+        if self.options.verbose == 0:
+            print msg
+        else:
+            self.log('code:%i \t%s' % (code, msg), lvl=1)
         sys.exit(code)
         #raise SystemExit, code
 
