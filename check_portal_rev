@@ -16,7 +16,7 @@ from naglib.nagiosplugin import NagiosPlugin
 
 
 class PortalRev(NagiosPlugin):
-    VERSION = '1.0.2' # integrated with NagiosPlugin baseclass
+    VERSION = '1.1.0'
     DESCRIPTION = "Displays portal version"
     MSG_LABEL = 'PortVers'
     CMD_LINE_HINT = 'check_portal_rev host'
@@ -25,12 +25,13 @@ class PortalRev(NagiosPlugin):
         parser.add_option("-r", "--revision", dest="revision")
         parser.add_option("-V", "--vers", dest="vers")
         parser.add_option("-b", "--build_time", dest="build_time")
+        parser.add_option("-u", "--url", dest="url", default="/portal/build.txt")
 
     def workload(self):
         if len(self.args) < 1:
             self.exit_help('Mandatory param missing')
         host = self.args[0]
-        cmd = 'curl %s/portal/build.txt' % (host)
+        cmd = 'curl %s%s' % (host, self.options.url)
         retcode,stdout,stderr = self.cmd_execute_output(cmd)
         if retcode:
             self.exit_crit('Command failed')
