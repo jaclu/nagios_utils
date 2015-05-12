@@ -21,7 +21,7 @@ VERBS = (TASK_LIST, TASK_TOGGLE)
 
 
 class PortalToggler(NagiosPlugin):
-    VERSION = '2.0.1'
+    VERSION = '2.0.2'
     DESCRIPTION = "lists/toggles production portal"
     MSG_LABEL = 'PORTAL_TOGGLER'
     CMD_LINE_HINT = 'list / toggle'
@@ -150,8 +150,8 @@ class PortalToggler(NagiosPlugin):
                     break
                 if time.time() > timeout:
                     self.exit_crit('Timeout waiting for one of the apps to come online')
-                time.sleep(10)
                 self.log('    Waiting max %is before timeout' % int(timeout - time.time()), 1)
+                time.sleep(10)
         else:
             final_status = 'suspended'
         self.log('  %s is now %s' % (group, final_status), 1)
