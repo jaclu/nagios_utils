@@ -44,6 +44,8 @@ class PortalToggler(NagiosPlugin):
     INSTANCES = {APP_BOTTER:6, APP_PORTAL:3, APP_API:4, APP_WEB:3} # this also defines the scale - # instances
     GROUPS = ('blue', 'green')
 
+    PROC_TIMEOUT = 900
+
 
     def custom_options(self, parser):
         parser.add_option("-C", '--command', dest='command', default='cf')
