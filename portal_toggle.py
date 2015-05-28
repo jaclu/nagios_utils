@@ -21,7 +21,7 @@ VERBS = (TASK_LIST, TASK_TOGGLE)
 
 
 class PortalToggler(NagiosPlugin):
-    VERSION = '2.1.0'
+    VERSION = '2.1.1'
     DESCRIPTION = "lists/toggles production portal"
     MSG_LABEL = 'PORTAL_TOGGLER'
     CMD_LINE_HINT = 'list / toggle'
@@ -122,7 +122,7 @@ class PortalToggler(NagiosPlugin):
             else:
                 scale = 1
             self.log('    scaling %s to %i instances and restarting' % (app_name, scale), 2)
-            self.scale_app(app_name, self.INSTANCES[app])
+            self.scale_app(app_name, scale)
             cmd = '%s restart %s' % (self.options.command, app_name)
             stdout = self.cmd_execute_abort_on_error(cmd)
 
