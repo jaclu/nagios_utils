@@ -21,7 +21,7 @@ VERBS = (TASK_LIST, TASK_TOGGLE)
 
 
 class PortalToggler(NagiosPlugin):
-    VERSION = '2.1.1'
+    VERSION = '2.1.2'
     DESCRIPTION = "lists/toggles production portal"
     MSG_LABEL = 'PORTAL_TOGGLER'
     CMD_LINE_HINT = 'list / toggle'
@@ -73,7 +73,7 @@ class PortalToggler(NagiosPlugin):
         #
         self.log('will now toggle production to %s' % initially_passive, 1)
         cmd = '~/bin/activate-environ %s' % initially_passive
-        stdout = self.cmd_execute_abort_on_error(cmd)
+        stdout = self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
         #
         # Retire the inactive group
         #
@@ -126,14 +126,14 @@ class PortalToggler(NagiosPlugin):
             self.log('    scaling %s to %i instances and restarting' % (app_name, scale), 2)
             self.scale_app(app_name, scale)
             cmd = '%s restart %s' % (self.options.command, app_name)
-            stdout = self.cmd_execute_abort_on_error(cmd)
+            stdout = self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
 
 
         if startup:
             final_status = 'active'
             self.log('  Waiting for all apps to beceome ready', 1)
             time.sleep(10) # give apps some time to start their processing
-            timeout = time.time() + 300
+            timeout = time.time() + 900
             while True:
                 all_ok = True
                 for app in self.APPS:
@@ -141,7 +141,7 @@ class PortalToggler(NagiosPlugin):
                     self.log('\tchecking %s' % app_name, 2)
                     cmd = '%s/check_cf_app %s -I %i' % (self.options.plugin_prefix, app_name, scale)
                     try:
-                        b = self.cmd_execute_raise_on_error(cmd)
+                        b = self.cmd_execute_raise_on_error(cmd, self.PROC_TIMEOUT)
                     except:
                         all_ok = False
                         break
@@ -159,12 +159,12 @@ class PortalToggler(NagiosPlugin):
 
     def scale_app(self, app_name, count):
         cmd = '%s scale -i %i %s' % (self.options.command, count, app_name)
-        stdout = self.cmd_execute_abort_on_error(cmd)
+        stdout = self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
 
 
     def app_is_running(self, app_name):
         cmd = '%s app %s' % (self.options.command, app_name)
-        stdout = self.cmd_execute_abort_on_error(cmd)
+        stdout = self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
         if stdout.find('requested state: started') > -1:
             running = True
             msg = 'is'
