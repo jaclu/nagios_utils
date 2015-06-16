@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python
 
 # check_postgres for nagios
 # Copyright 2014: europeana.eu   License: EUPL

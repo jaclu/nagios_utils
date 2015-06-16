@@ -26,9 +26,9 @@ class TimeUnits:
         self.pref_unit = self._calculate_pref_unit()
         
     def get_by_unit_key(self, s):
-        if not s in list(self.UNITS.keys()):
-            print('get_by_unit_key() bad param')
-            raise SystemError(2)
+        if not s in self.UNITS.keys():
+            print 'get_by_unit_key() bad param'
+            raise SystemError, 2
         f = self.value / self.UNITS[s][0]
         return int(f)
         
@@ -36,9 +36,9 @@ class TimeUnits:
         "if no unit given, the prefered (largest where value is > 1) is used"
         if not unit:
             unit = self.pref_unit
-        if not unit in list(self.UNITS.keys()):
-            print('get_plural_label() bad param')
-            raise SystemError(2)
+        if not unit in self.UNITS.keys():
+            print 'get_plural_label() bad param'
+            raise SystemError, 2
         return self.UNITS[unit][1]
         
     def get_rounded(self):
@@ -69,7 +69,7 @@ class TimeUnits:
                 unit_value = u
                 i = int(i/u)
                 break
-        for k in list(self.UNITS.keys()):
+        for k in self.UNITS.keys():
             if self.UNITS[k][0] == unit_value:
                 unit = k
                 break
@@ -85,15 +85,15 @@ class TimeUnits:
         # Assume last char is the unit
         #
         uc = param[-1]
-        if not uc in list(self.UNITS.keys()):
-            print('Bad unit in param: %s' % param)
-            raise SystemError(2)
+        if not uc in self.UNITS.keys():
+            print 'Bad unit in param: %s' % param
+            raise SystemError, 2
         try:
             value = int(float(param[:-1]))
             unit = self.UNITS[uc][0]
         except:
-            print('Bad value in param: %s' % param)
-            raise SystemError(2)
+            print 'Bad value in param: %s' % param
+            raise SystemError, 2
         
         # Zero age is perfectly fine for logfiles, so removed check    
         #if value == 0:
@@ -138,25 +138,25 @@ class TimeUnits:
 if 0:
     # testing
     for i in (1,59,60,61,3599,3600,3601,86401,604861):
-        print('time:', i, 'Displayed as:', TimeUnits(i).get())
+        print 'time:', i, 'Displayed as:', TimeUnits(i).get()
     
     if TimeUnits(65) < TimeUnits(65):
-        print('lt failed')
+        print 'lt failed'
         sys.exit(1)    
     if TimeUnits(65) <= TimeUnits(64):
-        print('le failed')
+        print 'le failed'
         sys.exit(1)    
     if TimeUnits(65) == TimeUnits(7):
-        print('eq  failed')
+        print 'eq  failed'
         sys.exit(1)
     if TimeUnits(65) != TimeUnits(65):
-        print('ne failed')
+        print 'ne failed'
         sys.exit(1)    
     if TimeUnits(32) > TimeUnits(32):
-        print('gt  failed')
+        print 'gt  failed'
         sys.exit(1)
     if TimeUnits(42) >= TimeUnits(65):
-        print('ge failed')
+        print 'ge failed'
         sys.exit(1)    
         
         

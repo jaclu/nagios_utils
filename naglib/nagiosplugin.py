@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
+from exceptions import StandardError
 import inspect
 from optparse import OptionParser, IndentedHelpFormatter
 import os.path
@@ -77,9 +78,9 @@ class GenericRunner(object):
         self.custom_options(self.parser)
         try:
             self.options, self.args = self.parser.parse_args()
-        except SystemExit as exit_code:
+        except SystemExit,exit_code:
             if self.HELP:
-                print(self.HELP)
+                print self.HELP
             sys.exit(exit_code)
         self.verify_argcount()
 
@@ -87,14 +88,14 @@ class GenericRunner(object):
 
     def exit_help(self,msg=None):
         "Convenient exit call, on param check failure"
-        print()
+        print
         if msg:
-            print('***', msg)
-            print()
+            print '***', msg
+            print
 
         if self.options.verbose > 0:
             self.log('Defaults:')
-            params = list(self.parser.defaults.keys())
+            params = self.parser.defaults.keys()
             params.sort()
             for s in params:
                 self.log('\t %s  %s' % (s, self.parser.defaults[s]))
@@ -153,7 +154,7 @@ class GenericRunner(object):
 
     def log(self, msg, lvl=1):
         if lvl <= self.log_lvl:
-            print(msg)
+            print msg
         return
 
 
@@ -171,8 +172,8 @@ class SubProcessTask(GenericRunner):
         if isinstance(cmd, (list, tuple)):
             cmd = ' '.join(cmd)
         self.log('External command: [%s]' % cmd, 3)
-        self._cmd_std_out = ''
-        self._cmd_std_err = ''
+        self._cmd_std_out = u''
+        self._cmd_std_err = u''
         try:
             t_fin = time.time() + timeout
             p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -180,12 +181,12 @@ class SubProcessTask(GenericRunner):
                 time.sleep(0.1)
 
             if p.poll() == None:
-                stderr = 'Timeout for command %s' % cmd
-                self.log('*** %s' % stderr)
+                stderr = u'Timeout for command %s' % cmd
+                self.log(u'*** %s' % stderr)
                 self._cmd_purge_io_buffers(p)
-                self.log('stdout: %s' % self._cmd_std_out)
-                self.log('stderr: %s' % self._cmd_std_err)
-                return 1,'',stderr
+                self.log(u'stdout: %s' % self._cmd_std_out)
+                self.log(u'stderr: %s' % self._cmd_std_err)
+                return 1,u'',stderr
 
             self._cmd_purge_io_buffers(p) # do last one to ensure we got everything
             retcode = p.returncode
@@ -193,8 +194,8 @@ class SubProcessTask(GenericRunner):
             stderr = self._cmd_std_err
         except:
             retcode = 1
-            stdout = ''
-            stderr = 'cmd_execute_output() exception - shouldnt normally happen'
+            stdout = u''
+            stderr = u'cmd_execute_output() exception - shouldnt normally happen'
         self.log(' exitcode: %i\n stdout: %s\n stderr: %s' % (retcode, stdout, stderr), 3)
         return retcode, stdout, stderr
 
@@ -205,11 +206,11 @@ class SubProcessTask(GenericRunner):
         result = 0
         retcode, stdout, stderr = self.cmd_execute_output(cmd, timeout)
         if retcode or stdout or stderr:
-            result = 'retcode: %s' % retcode
+            result = u'retcode: %s' % retcode
             if stdout:
-                result += '\nstdout: %s' % stdout
+                result += u'\nstdout: %s' % stdout
             if stderr:
-                result += '\nstderr: %s' % stderr
+                result += u'\nstderr: %s' % stderr
         return result
 
 
@@ -217,7 +218,7 @@ class SubProcessTask(GenericRunner):
     def cmd_execute_raise_on_error(self, cmd, timeout=PROC_TIMEOUT):
         retcode, stdout, stderr = self.cmd_execute_output(cmd, timeout)
         if retcode or stderr:
-            raise Exception('cmd [%s] failed' % cmd)
+            raise StandardError('cmd [%s] failed' % cmd)
         return True
 
 
@@ -328,7 +329,7 @@ class NagiosPlugin(SubProcessTask):
     def exit(self, code, msg):
         # perfdata should be printed after a pipe char, somewhat like this:
         # OK - load average: 1.15, 0.83, 0.49|load1=1.150;2.000;5.000;0; load5=0.830;2.000;5.000;0; load15=0.490;2.000;5.000;0;
-        if not code in list(NAG_RESP_CLASSES.keys()):
+        if not code in NAG_RESP_CLASSES.keys():
             self.exit_crit('Bad exit code: %s' % code)
         s_code = NAG_RESP_CLASSES[code]
         if self.MSG_LABEL:
@@ -343,7 +344,7 @@ class NagiosPlugin(SubProcessTask):
 
 
         if self.options.verbose == 0:
-            print(msg)
+            print msg
         else:
             self.log('code:%i \t%s' % (code, msg), lvl=1)
         sys.exit(code)
