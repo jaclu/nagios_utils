@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from exceptions import Exception
 import inspect
 from optparse import OptionParser, IndentedHelpFormatter
 import os.path
