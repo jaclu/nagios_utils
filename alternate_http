@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 If you cant install the nagios check_http you can use this instead...
 
 """
 
 import time
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 
 from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
@@ -23,9 +23,9 @@ class CheckHttp(NagiosPlugin):
         if not self.options.url:
             self.exit_help('No url specified')
         if self.options.verbose > 1:
-            print 'url: %s' % self.options.url
+            print('url: %s' % self.options.url)
             if self.options.response:
-                print 'expected response: %s' % self.options.response
+                print('expected response: %s' % self.options.response)
         t1 = time.time()
         self.check_url(self.options.url, self.options.response)
         t2 = time.time() - t1
@@ -36,8 +36,8 @@ class CheckHttp(NagiosPlugin):
     def check_url(self, url, s_expect, timeout=10):
         t1 = time.time()
         try:
-            f = urllib2.urlopen(url, timeout=timeout)
-        except urllib2.HTTPError, e:
+            f = urllib.request.urlopen(url, timeout=timeout)
+        except urllib.error.HTTPError as e:
             self.exit_crit('HTTP error:%i - %s' % (e.code,e.msg))
         except:
             if time.time() > t1 + timeout:

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import time
@@ -57,7 +57,7 @@ class CheckMongoDb(NagiosPlugin):
         f.write('%s\n' % query)
 
         f.flush()
-        print f.name
+        print(f.name)
         cmd = 'cat "%s"|%s --quiet' % (f.name, self.options.mongo_cmd)
 
         if self.options.filter:
@@ -99,96 +99,3 @@ class CheckMongoDb(NagiosPlugin):
 
 if __name__ == "__main__":
     CheckMongoDb().run()
-
-"""
-arg_count = len (sys.argv) - 1
-
-if not arg_count:
-    print
-    print 'check_mongodb database collection/special_query [post_cmd]'
-    print
-    print '\tFor remote databases use hostname:port/database notation'
-    print
-    print '\tIf second param contains no dot (.) it is assumed to be a collection'
-    print '\t and test will succeed if this collection has more than zero records.'
-    print
-    print '\tIf there is a dot this is assumed to be a full query and it will be run as given'
-    print '\t example: db.record.findOne()'
-    print
-    print '\tIf a post_cmd is given, this is piped in after the mongo call, usefull for a grep or regexp'
-    print '\t in combination with a special query to verify specific content is available'
-    print '\t it is assumed a post_cmd will generate output if successfull'
-    print '\t empty result is assumed to be a failed test'
-    print
-    sys.exit(2)
-
-try:
-    db = sys.argv[1]
-except:
-    print 'ERROR: first param must be a database name'
-    sys.exit(2)
-
-try:
-    collection = sys.argv[2]
-    if collection.find('.') > -1:
-        s_input = collection
-    else:
-        s_input = 'db.%s.count()' % collection
-except:
-    print 'ERROR: second param must be a collection name'
-    sys.exit(2)
-
-post_cmd = ''
-if arg_count > 2:
-    post_cmd = '| %s' % sys.argv[3]
-
-cmd = 'echo "%s" | mongo --quiet %s %s' % (s_input, db, post_cmd)
-if DEBUG:
-    print '*** Cmd that will be run on next line'
-    print cmd
-    print
-p = subprocess.Popen(cmd,
-                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
-output = p.stdout.readlines()
-p.communicate()
-retcode = p.returncode
-
-if retcode:
-    print 'ERROR: Command failed (%i): %s' % (retcode, cmd)
-    sys.exit(2)
-
-if post_cmd:
-    if isinstance(output, list):
-        #print '*** it was a list'
-        s = ' '.join(output)
-        #print 'pre strip {{%s}}' % s
-        output = s.strip()
-        #print 'post strip {{%s}}' % output
-
-    if output:
-        print 'OK - extended test successful'
-        sys.exit(0)
-    else:
-        print 'ERROR: Extended test failed!'
-        sys.exit(2)
-
-#
-# assuming it was a record count
-#2
-try:
-    # old mongoclient test
-    count = int(output[-2])
-except:
-    if DEBUG:
-        print '** Old style count parsing failed'
-    try:
-        # starting at vers 2.6.7 this works
-        count = int(output[0].strip())
-    except:
-        print 'ERROR: Failed to read record count: %s' % output
-        sys.exit(2)
-if not count:
-    print 'ERROR: zero records found, did you use correct DB name?'
-    sys.exit(2)
-print 'OK - %i records' % count
-"""

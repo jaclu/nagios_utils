@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import glob
 import os
@@ -142,7 +142,7 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
                     fname = min(os.listdir(wd), key=os.path.getmtime)
                 else:
                     fname = max(os.listdir(wd), key=os.path.getmtime)
-            except OSError, e:
+            except OSError as e:
                 self.exit_crit( 'OSError: %s' % e)
             except:
                 self.exit_crit( 'os.listdir() failed')

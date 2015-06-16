@@ -1,12 +1,11 @@
-#!/usr/bin/env python
-
+#!/usr/bin/env python3
 
 import time
-import urllib2, httplib
+import urllib.request, urllib.error, urllib.parse, http.client
 try:
     from urllib.parse import urlparse
 except:
-    from urlparse import urlparse
+    from urllib.parse import urlparse
 
 from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
@@ -47,9 +46,9 @@ class CheckSolr(NagiosPlugin):
             url += self.DEFAULT_REL_URL
 
         if self.options.verbose > 1:
-            print 'url: %s' % url
+            print('url: %s' % url)
             if self.options.count:
-                print 'expected item count: %i' % count
+                print('expected item count: %i' % count)
 
         t1 = time.time()
         content = self.check_url(url)
@@ -71,12 +70,12 @@ class CheckSolr(NagiosPlugin):
     def check_url(self, url, timeout=10):
         t1 = time.time()
         try:
-            f = urllib2.urlopen(url, timeout=timeout)
-        except urllib2.HTTPError, e:
+            f = urllib.request.urlopen(url, timeout=timeout)
+        except urllib.error.HTTPError as e:
             self.exit_crit('HTTP error:%i - %s' % (e.code,e.msg))
-        except urllib2.URLError, e:
+        except urllib.error.URLError as e:
             self.exit_crit('URL error: %s' % e.reason)
-        except httplib.BadStatusLine, e:
+        except http.client.BadStatusLine as e:
             if not e.line == 3:
                 self.exit_crit('No response - server down?')
             else:

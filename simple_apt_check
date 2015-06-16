@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 """
   Simple nagios style deb-checker
@@ -17,8 +17,8 @@ nag_check_cmd = '/usr/lib/nagios/plugins/check_apt'
 
 
 if not os.path.exists(nag_check_cmd):
-    print 'CRITICAL: external cmd missong: %s' % nag_check_cmd
-    print 'usually found in pkg: nagios-plugins-basic'
+    print('CRITICAL: external cmd missong: %s' % nag_check_cmd)
+    print('usually found in pkg: nagios-plugins-basic')
     sys.exit(2)
 
 try:
@@ -30,15 +30,15 @@ try:
     crit_count = int(crits.split()[0])
     reg_count = int(relevant_line.split()[0])
 except:
-    print 'cmd failed'
+    print('cmd failed')
     sys.exit(2)
 
 if crit_count:
-    print '%s' % crits
+    print('%s' % crits)
     sys.exit(1)
 
 if 0:# reg_count:
-    print '%s' % relevant_line
+    print('%s' % relevant_line)
     sys.exit(1)
-    
-print '%s' % relevant_line
+
+print('%s' % relevant_line)
