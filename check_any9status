@@ -12,7 +12,7 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
 class Any9Status(NagiosPlugin):
-    VERSION = '1.0.0'
+    VERSION = '1.1.0'
 
     def custom_options(self, parser):
         parser.add_option("-u", '--url', dest="url")
@@ -25,7 +25,10 @@ class Any9Status(NagiosPlugin):
         t1 = time.time()
         content = self.check_url(self.options.url)
         issues = {}
-        for s in content.split('<span class="name">')[1:]:
+        parts = content.split('<span class="name">')[1:]
+        if not parts:
+            self.exit_crit('%s does not look like a status page' % self.options.url)
+        for s in parts:
             try:
                 module = s.split('\n')[1].strip()
                 status = s.split('<span class="component-status">')[1].split('</')[0].strip()
