@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import time
 import parser
 import numpy
 
@@ -9,7 +10,7 @@ from naglib.timeunits import TimeUnits
 
 
 class CheckCfApp(NagiosPlugin):
-    VERSION = '1.3.0'  # added -I crit_instances
+    VERSION = '1.4.0'  # added -p ping check
     HELP = """
 Monitors a cloud fusion app for important stats
   -w warning  load level (default is 50)
@@ -27,6 +28,7 @@ Monitors a cloud fusion app for important stats
         parser.add_option("-s", '--space', dest='space')
         parser.add_option('-i', '--inst-warn', dest='warn_instances', type='int', default=0)
         parser.add_option('-I', '--inst-crit', dest='crit_instances', type='int', default=0)
+        parser.add_option("-p", '--ping', action="store_true", dest="do_ping", default=False)
 
     def workload(self):
         if len(self.args) != 1:
@@ -43,7 +45,13 @@ Monitors a cloud fusion app for important stats
 
         cmd = '%s app %s' % (self.options.command, appname)
         self.log('Will run cf app',)
+        t1 = time.time()
         stdout = self.cmd_execute_abort_on_error(cmd)
+        t2 = time.time() - t1
+        if self.options.do_ping:
+            self.add_perf_data('response time', t2, 5, 20, '0')
+            self.exit_ok('Response time logged')
+
         loads = []
         max_load = inst_count = run_count = 0
         for org_line in stdout.split('\n'):
