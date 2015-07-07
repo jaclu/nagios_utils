@@ -10,7 +10,7 @@ from naglib.timeunits import TimeUnits
 
 
 class CheckCfApp(NagiosPlugin):
-    VERSION = '1.4.0'  # added -p ping check
+    VERSION = '1.4.1'  # added ping timeout stats update
     HELP = """
 Monitors a cloud fusion app for important stats
   -w warning  load level (default is 50)
@@ -46,7 +46,12 @@ Monitors a cloud fusion app for important stats
         cmd = '%s app %s' % (self.options.command, appname)
         self.log('Will run cf app',)
         t1 = time.time()
-        stdout = self.cmd_execute_abort_on_error(cmd)
+        try:
+            stdout = self.cmd_execute_abort_on_error(cmd,10)
+        except:
+            t2 = time.time() - t1
+            self.add_perf_data('response time', t2, 5, 20, '0')
+            self.exit_crit('Cmd failed!!')
         t2 = time.time() - t1
         if self.options.do_ping:
             self.add_perf_data('response time', t2, 5, 20, '0')
