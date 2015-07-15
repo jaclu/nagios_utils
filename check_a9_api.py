@@ -13,9 +13,9 @@ class Any9Api(NagiosPlugin):
     CMD_LINE_HINT = 'if you need to use - for options to the cf command encapsulate like "push -f manifest.yml"'
 
     def custom_options(self, parser):
-        parser.add_option('-w', '--warning',   dest='warning',   type='int', default=60)
-        parser.add_option('-c', '--critical',  dest='critical',  type='int', default=210)
-        parser.add_option("-t", '--timeout',   dest='timeout',   type='int', default=400)
+        parser.add_option('-w', '--warning',   dest='warning',   type='int', default=30)
+        parser.add_option('-c', '--critical',  dest='critical',  type='int', default=60)
+        parser.add_option("-t", '--timeout',   dest='timeout',   type='int', default=300)
         parser.add_option("-C", '--command',   dest='command',   default='cf')
         parser.add_option("-d", '--directory', dest="directory", default='',
                           help='cd to this location before executing')
