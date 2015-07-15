@@ -17,6 +17,8 @@ class Any9Api(NagiosPlugin):
         parser.add_option('-c', '--critical',  dest='critical',  type='int', default=60)
         parser.add_option("-t", '--timeout',   dest='timeout',   type='int', default=300)
         parser.add_option("-C", '--command',   dest='command',   default='cf')
+        parser.add_option("-e", '--errvalue',  dest='errvalue',  type='int', default=-10,
+                          help='if cmd timeouts or otherwise fail, this is perf value to send')
         parser.add_option("-d", '--directory', dest="directory", default='',
                           help='cd to this location before executing')
 
@@ -31,17 +33,17 @@ class Any9Api(NagiosPlugin):
         t1 = time.time()
         retcode, stdout, stderr = self.cmd_execute_output(cmd, self.options.timeout)
         if stderr and stderr.split()[0] == 'Timeout':
-            self.add_perf_data('response time',-10, warning=self.options.warning, critical=self.options.critical, minimum=-10)
+            self.add_perf_data('response time',self.options.errvalue, warning=self.options.warning, critical=self.options.critical, minimum=self.options.errvalue)
             self.exit_crit('Timeout!')
 
         t2 = time.time() - t1
         if stderr or retcode:
             self.log('cmd took %.2f seconds' % t2) # since perf data wont show it...
             err_details = self.extractCloudFoundryErrorDetails(stdout)
-            self.add_perf_data('response time',-10, warning=self.options.warning, critical=self.options.critical, minimum=-10)
+            self.add_perf_data('response time',self.options.errvalue, warning=self.options.warning, critical=self.options.critical, minimum=self.options.errvalue)
             self.exit_crit('Errormsg: %s' % err_details or stderr)
 
-        self.add_perf_data('response time',t2, warning=self.options.warning, critical=self.options.critical, minimum=-10)
+        self.add_perf_data('response time',t2, warning=self.options.warning, critical=self.options.critical, minimum=self.options.errvalue)
         msg = 'API cmd took %s' % TimeUnits(t2)
         if t2 < self.options.warning:
             self.exit_ok(msg)
