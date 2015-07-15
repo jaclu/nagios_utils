@@ -74,6 +74,10 @@ class GenericRunner(object):
         self.parser.add_option("-v", default=0, action="count", dest="verbose",
                                help='Verbosity level, you can add up to three -v \t\t0=no output, 1, 2, 3=all output')
         self.parser.add_option('-q', '--quiet', dest='verbose', action='store_false')
+        self.parser.add_option('--nsca', dest='nsca', default='',
+                               help='show result in nsca format, expected param host,srvcname '
+                                    '(host where the check is logged), '
+                                    'nsca will find destination where to send the data in its own config file)')
 
         self.custom_options(self.parser)
         try:
@@ -280,7 +284,7 @@ class NagiosPlugin(SubProcessTask):
       Sample item: ('load1', '1.150', '2.000', '5.000','0')
     """
 
-    BASE_VERSION = '1.6.0'
+    BASE_VERSION = '1.6.1' # added nsca global option
     VERSION = BASE_VERSION
     MSG_LABEL = '' # optional prefix for the message line
 
@@ -295,6 +299,7 @@ class NagiosPlugin(SubProcessTask):
 
     def run(self):
         try:
+            self.show_options()
             self.workload()
             self.exit_crit('Plugin implementation failed to terminate properly!')
         except SystemExit:
@@ -302,6 +307,21 @@ class NagiosPlugin(SubProcessTask):
         except:
             self.exit_crit('Plugin implementation crashed!')
 
+
+    def show_options(self):
+        if self.log_lvl < 1:
+            return
+        self.log('Options for program (* indicates default)')
+        optlst = self.options.__dict__
+        opts = []
+        for s in optlst.keys():
+            value = optlst[s]
+            if value == self.parser.defaults[s]:
+                value = '*%s' % value
+            opts.append('  %s = %s ' % (s, value))
+        opts.sort()
+        for o in opts:
+            print o
 
 
 
@@ -342,6 +362,11 @@ class NagiosPlugin(SubProcessTask):
 
             msg += '; '.join(perfs) + ';'
 
+        if self.options.nsca:
+            response = '\t'.join(self.options.nsca.split(',') + ['%s' % code] + [msg]
+                                 ) + '\n'
+            print response
+            sys.exit(0) # we show exit_code in nsca output
 
         if self.options.verbose == 0:
             print msg
