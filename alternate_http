@@ -10,10 +10,8 @@ import urllib2
 from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
-
 class CheckHttp(NagiosPlugin):
     VERSION = '1.2.1'
-    #MSG_LABEL = 'FILE_EXISTS'
 
     def custom_options(self, parser):
         parser.add_option("-u", '--url', dest="url")
@@ -30,24 +28,23 @@ class CheckHttp(NagiosPlugin):
         self.check_url(self.options.url, self.options.response)
         t2 = time.time() - t1
         self.add_perf_data('response time', t2)
-        self.exit(NAG_OK, 'Expected result recieved in %.2f seconds' % t2)
-
+        self.exit(NAG_OK, 'Expected result received in %.2f seconds' % t2)
 
     def check_url(self, url, s_expect, timeout=10):
         t1 = time.time()
         try:
             f = urllib2.urlopen(url, timeout=timeout)
         except urllib2.HTTPError, e:
-            self.exit_crit('HTTP error:%i - %s' % (e.code,e.msg))
+            self.exit_crit('HTTP error:%i - %s' % (e.code, e.msg))
         except:
             if time.time() > t1 + timeout:
                 self.exit_crit('timeout!')
-            self.exit_crit( 'unknwon failure processing url')
+            self.exit_crit('unknown failure processing url')
         if f.code != 200:
-            self.exit_crit( '%s %s' % (f.code, f.msg))
+            self.exit_crit('%s %s' % (f.code, f.msg))
         content = f.read()
         if s_expect and (content.find(s_expect) < 0):
-            self.exit_crit( '%s not found' % s_expect)
+            self.exit_crit('%s not found' % s_expect)
 
 
 if __name__ == "__main__":

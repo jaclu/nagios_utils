@@ -10,7 +10,6 @@ import urllib2
 from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
-
 class Any9Status(NagiosPlugin):
     VERSION = '1.1.0'
 
@@ -33,9 +32,9 @@ class Any9Status(NagiosPlugin):
                 module = s.split('\n')[1].strip()
                 status = s.split('<span class="component-status">')[1].split('</')[0].strip()
             except:
-                self.exit_crit('Could not interperate output from: %s' % self.options.url )
+                self.exit_crit('Could not interperate output from: %s' % self.options.url)
             if status != 'Operational':
-                if not issues.has_key(status):
+                if status not in issues:
                     issues[status] = []
                 issues[status].append(module)
         t2 = time.time() - t1
@@ -43,24 +42,23 @@ class Any9Status(NagiosPlugin):
         if issues:
             bad_hosts = []
             for k in issues.keys():
-                bad_hosts.append('%s: %s' % (k,', '.join(issues[k])))
+                bad_hosts.append('%s: %s' % (k, ', '.join(issues[k])))
             msg = ', '.join(bad_hosts)
             self.exit_crit(msg)
         self.exit_ok('No issues reported')
-
 
     def check_url(self, url, timeout=10):
         t1 = time.time()
         try:
             f = urllib2.urlopen(url, timeout=timeout)
         except urllib2.HTTPError, e:
-            self.exit_crit('HTTP error:%i - %s' % (e.code,e.msg))
+            self.exit_crit('HTTP error:%i - %s' % (e.code, e.msg))
         except:
             if time.time() > t1 + timeout:
                 self.exit_crit('timeout!')
-            self.exit_crit( 'unknwon failure processing url')
+            self.exit_crit('unknown failure processing url')
         if f.code != 200:
-            self.exit_crit( '%s %s' % (f.code, f.msg))
+            self.exit_crit('%s %s' % (f.code, f.msg))
         content = f.read()
         return content
 

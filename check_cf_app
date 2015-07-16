@@ -8,7 +8,6 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
 from naglib.timeunits import TimeUnits
 
 
-
 class CheckCfApp(NagiosPlugin):
     VERSION = '1.4.1'  # added ping timeout stats update
     HELP = """
@@ -32,7 +31,7 @@ Monitors a cloud fusion app for important stats
 
     def workload(self):
         if len(self.args) != 1:
-            self.exit_crit( 'exactly one appname must be suplied as param')
+            self.exit_crit('exactly one appname must be supplied as param')
         appname = self.args.pop()
 
         if not self.options.command:
@@ -47,7 +46,7 @@ Monitors a cloud fusion app for important stats
         self.log('Will run cf app',)
         t1 = time.time()
         try:
-            stdout = self.cmd_execute_abort_on_error(cmd,10)
+            stdout = self.cmd_execute_abort_on_error(cmd, 10)
         except:
             t2 = time.time() - t1
             self.add_perf_data('response time', t2, 5, 20, '0')
@@ -80,7 +79,7 @@ Monitors a cloud fusion app for important stats
                 time_parts[0] = '%i' % (int(time_parts[0]) + 12)
                 ttime = ':'.join(time_parts)
             """
-            load = float(parts[5][:-1]) # skip % char
+            load = float(parts[5][:-1])  # skip % char
             loads.append(load)
             if load > max_load:
                 max_load = load
@@ -110,12 +109,10 @@ Monitors a cloud fusion app for important stats
                 esc_mode = True
             if esc_mode and c == 'm':
                 esc_mode = False
-                continue # dont store the m char
+                continue  # dont store the m char
             if not esc_mode:
                 line += c
         return line.strip()
-
-
 
 
 if __name__ == "__main__":

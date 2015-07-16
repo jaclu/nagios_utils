@@ -22,22 +22,17 @@ NAG_RESP_CLASSES = {
     }
 
 
-
-
 class GenericRunner(object):
-    VERSION = 'unknown' # override to something meaningfull
+    VERSION = 'unknown'  # override to something meaningfull
 
-    CMD_LINE_HINT = '' # if given this will be printed after name [options]
-    HELP = '' # add custom help if needed
+    CMD_LINE_HINT = ''  # if given this will be printed after name [options]
+    HELP = ''  # add custom help if needed
     DESCRIPTION = None
-    ARGC = '*' # * = 0 or larger, n = exact match, 2+ two or more, 1-3 one to three
-
+    ARGC = '*'  # * = 0 or larger, n = exact match, 2+ two or more, 1-3 one to three
 
     def __init__(self):
         self.option_handler()
         self.log_lvl = int(self.options.verbose)
-
-
 
     def custom_options(self, parser):
         """Override for adding local options.

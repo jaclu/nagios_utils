@@ -2,7 +2,8 @@
 
 
 import time
-import urllib2, httplib
+import urllib2
+import httplib
 try:
     from urllib.parse import urlparse
 except:
@@ -11,11 +12,10 @@ except:
 from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
-
 class CheckSolr(NagiosPlugin):
     VERSION = '1.1.2'
     DEFAULT_REL_URL = '/solr/search/select?q=*:*&rows=0'
-    CMD_LINE_HINT  ='url'
+    CMD_LINE_HINT = 'url'
     HELP = """
     if only http://adr[:port] is used as url
 
@@ -24,7 +24,6 @@ class CheckSolr(NagiosPlugin):
     will be appended.
 
     """ % DEFAULT_REL_URL
-
 
     def custom_options(self, parser):
         parser.add_option("-c", '--count', dest="count", type='int', default=0,
@@ -67,13 +66,12 @@ class CheckSolr(NagiosPlugin):
         self.exit_ok('Solr responsive')
 
 
-
     def check_url(self, url, timeout=10):
         t1 = time.time()
         try:
             f = urllib2.urlopen(url, timeout=timeout)
         except urllib2.HTTPError, e:
-            self.exit_crit('HTTP error:%i - %s' % (e.code,e.msg))
+            self.exit_crit('HTTP error:%i - %s' % (e.code, e.msg))
         except urllib2.URLError, e:
             self.exit_crit('URL error: %s' % e.reason)
         except httplib.BadStatusLine, e:
@@ -84,12 +82,11 @@ class CheckSolr(NagiosPlugin):
         except:
             if time.time() > t1 + timeout:
                 self.exit_crit('timeout')
-            self.exit_crit( 'unknwon failure processing url - maybe not responding?')
+            self.exit_crit('unknwon failure processing url - maybe not responding?')
         if f.code != 200:
-            self.exit_crit( 'Bad response: %s %s' % (f.code, f.msg))
+            self.exit_crit('Bad response: %s %s' % (f.code, f.msg))
         content = f.read()
         return content
-
 
     def check_count(self, content):
         parts = content.split('numFound="')
@@ -101,7 +98,8 @@ class CheckSolr(NagiosPlugin):
             self_exit_crit('numFound found but no itemcount')
 
         if self.options.count != actual_count:
-            self.exit_crit('Expected %i items, found %i - diff %i' % (self.options.count, actual_count, actual_count - self.options.count))
+            self.exit_crit('Expected %i items, found %i - diff %i' % (self.options.count, actual_count,
+                                                                      actual_count - self.options.count))
         self.exit(NAG_OK, 'Itemcount as expected: %i' % self.options.count)
 
 

@@ -7,9 +7,8 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
 from naglib.timeunits import TimeUnits
 
 
-
 class CheckFileExists(NagiosPlugin):
-    VERSION = '1.1' # 2015-03-25 jaclu added perfdata
+    VERSION = '1.1'  # 2015-03-25 jaclu added perfdata
     HELP = """
 Returns critical if file is missing
   -w makes the alarm be a warning instead of critical.
@@ -24,7 +23,7 @@ Returns critical if file is missing
 
     def workload(self):
         if len(self.args) != 1:
-            self.exit_crit( 'exactly one filename must be suplied as param')
+            self.exit_crit('exactly one filename must be supplied as param')
 
         fname = self.args.pop()
 
@@ -53,9 +52,8 @@ Returns critical if file is missing
             result = NAG_OK
             msg = '%s not present'
 
-        self.add_perf_data('found', perf_value, '','','0','100')
+        self.add_perf_data('found', perf_value, '', '', '0', '100')
         self.exit(result, msg % fname)
-
 
 
 if __name__ == "__main__":

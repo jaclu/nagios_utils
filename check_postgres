@@ -12,9 +12,6 @@ import sys
 from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
 
 
-
-
-
 class CheckPostgres(NagiosPlugin):
     VERSION = '0.3.6'
     HELP = """
@@ -25,8 +22,7 @@ class CheckPostgres(NagiosPlugin):
 
 """
     CMD_LINE_HINT = 'filepath'
-    ARGC = '*' # * = 0 or larger, n = exact match, 2+ two or more, 1-3 one to three
-
+    ARGC = '*'  # * = 0 or larger, n = exact match, 2+ two or more, 1-3 one to three
 
     def custom_options(self, parser):
         parser.add_option("-l", '--listdb', action="store_true", dest="listdb", default=False,
@@ -51,22 +47,22 @@ class CheckPostgres(NagiosPlugin):
         if self.options.listdb:
             self.listdb()
         if not self.options.database:
-            self.exit_crit( 'No database specified')
+            self.exit_crit('No database specified')
         if not self.options.query:
-            self.exit_crit( 'No query specified')
+            self.exit_crit('No query specified')
         self.run_query(self.options.query)
         self.exit(NAG_OK, 'test condition true')
 
     def run_query(self, q):
         cmd = self.build_cmd(q)
-        retcode,stdout,stderr = self.cmd_execute_output(cmd)
+        retcode, stdout, stderr = self.cmd_execute_output(cmd)
         if retcode:
-            self.exit_crit( 'cmd failed: %s' % self.cmd_strip_password(cmd))
+            self.exit_crit('cmd failed: %s' % self.cmd_strip_password(cmd))
         r = stdout.strip()
         if self.options.label:
             label = self.options.label
             if label.find(' ') > -1:
-                self.exit_crit( 'label param can not contain white space(%s)' % label)
+                self.exit_crit('label param can not contain white space(%s)' % label)
             result_msg = '%s=%s' % (label, r)
         else:
             result_msg = r
@@ -87,14 +83,12 @@ class CheckPostgres(NagiosPlugin):
         sql = ''.join(c2)
 
         cmd = self.build_cmd('SELECT %s' % sql)
-        retcode,stdout,stderr = self.cmd_execute_output(cmd)
+        retcode, stdout, stderr = self.cmd_execute_output(cmd)
         if retcode:
-            self.exit_crit( 'cmd failed: %s' % self.cmd_strip_password(cmd))
+            self.exit_crit('cmd failed: %s' % self.cmd_strip_password(cmd))
         if stdout.strip().lower() != 't':
-            self.exit_crit( 'condition returned false: %s' % sql)
+            self.exit_crit('condition returned false: %s' % sql)
         self.exit(NAG_OK, result_msg)
-
-
 
     def build_cmd(self, sql):
         if sql[-1] != ';':
@@ -112,36 +106,31 @@ class CheckPostgres(NagiosPlugin):
         cmd += ' -t -c "%s"' % sql
         return cmd
 
-
-
     def cmd_strip_password(self, cmd):
         if cmd.find('PGPASSWORD') < 0:
-            return cmd # pw not used
+            return cmd  # pw not used
         # strip until first whitespace'
         parts = cmd.split()
         r = 'PGPASSWORD=xxxxxxx ' + ' '.join(parts[1:])
         return r
 
-
-
     def listdb(self):
         db = self.options.database
         self.options.database = ''
         cmd = self.build_cmd('SELECT datname FROM pg_database WHERE datistemplate = false')
-        #cmd = 'psql -t -U postgres -c "SELECT datname FROM pg_database WHERE datistemplate = false;"'
-        retcode,stdout,stderr = self.cmd_execute_output(cmd)
+        # cmd = 'psql -t -U postgres -c "SELECT datname FROM pg_database WHERE datistemplate = false;"'
+        retcode, stdout, stderr = self.cmd_execute_output(cmd)
         if retcode:
-            self.exit_crit( 'Command failed (%i): %s' % (retcode, self.cmd_strip_password(cmd)))
+            self.exit_crit('Command failed (%i): %s' % (retcode, self.cmd_strip_password(cmd)))
 
         databases = stdout.split()
         if db:
             if db in databases:
                 self.exit(NAG_OK, 'database %s is present' % db)
             else:
-                self.exit_crit( 'database %s missing' % db)
+                self.exit_crit('database %s missing' % db)
 
         self.exit(NAG_OK, 'databases: %s' % ' '.join(stdout.split()))
-
 
 
 if __name__ == "__main__":

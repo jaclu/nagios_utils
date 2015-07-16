@@ -12,9 +12,6 @@
 from naglib.nagiosplugin import NagiosPlugin
 
 
-
-
-
 class PortalRev(NagiosPlugin):
     VERSION = '1.1.0'
     DESCRIPTION = "Displays portal version"
@@ -32,7 +29,7 @@ class PortalRev(NagiosPlugin):
             self.exit_help('Mandatory param missing')
         host = self.args[0]
         cmd = 'curl %s%s' % (host, self.options.url)
-        retcode,stdout,stderr = self.cmd_execute_output(cmd)
+        retcode, stdout, stderr = self.cmd_execute_output(cmd)
         if retcode:
             self.exit_crit('Command failed')
         parts = stdout.split()
@@ -40,7 +37,7 @@ class PortalRev(NagiosPlugin):
         rev = parts[1]
         build_time = parts[4] + ' ' + parts[5]
         version = parts[-3]
-        branch = parts[-1].replace(')','')
+        branch = parts[-1].replace(')', '')
 
         if self.options.revision:
             if rev != self.options.revision:
