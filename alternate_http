@@ -11,7 +11,7 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
 class CheckHttp(NagiosPlugin):
-    VERSION = '1.3.0'  # added param -n
+    VERSION = '1.3.1'  # added param -n
 
     def custom_options(self, parser):
         parser.add_option("-u", '--url', dest="url")
@@ -51,7 +51,7 @@ class CheckHttp(NagiosPlugin):
         is_found = content.find(s_expect) > -1
         if self.options.not_allowed and is_found:
             self.exit_crit('"%s" should not be present' % s_expect)
-        elif not is_found:
+        elif not is_found and (not self.options.not_allowed):
             self.exit_crit('"%s" should be present' % s_expect)
         self.exit_ok('expected string found')
 
