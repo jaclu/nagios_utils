@@ -11,15 +11,20 @@ from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
 
 
 class CheckHttp(NagiosPlugin):
-    VERSION = '1.2.1'
+    VERSION = '1.3.0'  # added param -n
 
     def custom_options(self, parser):
         parser.add_option("-u", '--url', dest="url")
         parser.add_option("-r", '--response', dest="response")
+        parser.add_option("-n", '--not_allowed', dest="not_allowed", action="store_true", default=False,
+                          help='finding the response results in critical')
 
     def workload(self):
         if not self.options.url:
             self.exit_help('No url specified')
+        if not self.options.response:
+            self.exit_help('No response specified')
+
         if self.options.verbose > 1:
             print 'url: %s' % self.options.url
             if self.options.response:
@@ -43,8 +48,12 @@ class CheckHttp(NagiosPlugin):
         if f.code != 200:
             self.exit_crit('%s %s' % (f.code, f.msg))
         content = f.read()
-        if s_expect and (content.find(s_expect) < 0):
-            self.exit_crit('%s not found' % s_expect)
+        is_found = content.find(s_expect) > -1
+        if self.options.not_allowed and is_found:
+            self.exit_crit('"%s" should not be present' % s_expect)
+        elif not is_found:
+            self.exit_crit('"%s" should be present' % s_expect)
+        self.exit_ok('expected string found')
 
 
 if __name__ == "__main__":
