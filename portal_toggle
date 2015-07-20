@@ -9,6 +9,7 @@ if that is not found, nothing bad happens, only scaling up of the passive side
 """
 
 import time
+from check_cf_app import CheckCfApp
 
 from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
 
@@ -19,7 +20,7 @@ TASK_TOGGLE = 'toggle'
 VERBS = (TASK_LIST, TASK_TOGGLE)
 
 class PortalToggler(NagiosPlugin):
-    VERSION = '2.1.2'
+    VERSION = '2.2.0'  # added -n toggle
     DESCRIPTION = "lists/toggles production portal"
     MSG_LABEL = 'PORTAL_TOGGLER'
     CMD_LINE_HINT = 'list / toggle'
@@ -48,6 +49,8 @@ class PortalToggler(NagiosPlugin):
     def custom_options(self, parser):
         parser.add_option("-C", '--command', dest='command', default='cf')
         parser.add_option('-P', '--prefix', dest='plugin_prefix', default='/usr/local/nagiosplugins')
+        parser.add_option("-n", '--no_scaledown', dest="no_scaledown", action="store_true", default=False,
+                          help='Dont scale down the retiring environ')
 
 
     def workload(self):
@@ -75,7 +78,10 @@ class PortalToggler(NagiosPlugin):
         #
         # Retire the inactive group
         #
-        self.activate_stack(group=initially_active, startup=False)
+        if self.options.no_scaledown == False:
+            self.activate_stack(group=initially_active, startup=False)
+        else:
+            self.log('Not scaling down %s' % initially_active)
 
         open('/tmp/portal_toggle.log','a').write('%s - activated: %s\n' % ( time.asctime(), initially_passive))
         self.exit_ok('portal toggled sccessfully, %s is now active' % initially_passive)
@@ -137,12 +143,20 @@ class PortalToggler(NagiosPlugin):
                 for app in self.APPS:
                     app_name = '%s-%s' % (group, app)
                     self.log('\tchecking %s' % app_name, 2)
-                    cmd = '%s/check_cf_app %s -I %i' % (self.options.plugin_prefix, app_name, scale)
-                    try:
-                        b = self.cmd_execute_raise_on_error(cmd, self.PROC_TIMEOUT)
-                    except:
-                        all_ok = False
-                        break
+                    param_args = [app_name, '-I', '%s' % scale]
+                    if self.options.plugin_prefix:
+                        extra_opt = ['--command', self.options.command]
+                        if param_args:
+                            param_args += extra_opt
+                        else:
+                            param_args = extra_opt
+                    b = CheckCfApp(param_args).run()
+                    #  cmd = '%s/check_cf_app.py %s -I %i' % (self.options.plugin_prefix, app_name, scale)
+                    #try:
+                    #    b = self.cmd_execute_raise_on_error(cmd, self.PROC_TIMEOUT)
+                    #except:
+                    #    all_ok = False
+                    #    break
                 if all_ok:
                     break
                 if time.time() > timeout:

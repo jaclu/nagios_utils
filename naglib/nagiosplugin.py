@@ -30,8 +30,8 @@ class GenericRunner(object):
     DESCRIPTION = None
     ARGC = '*'  # * = 0 or larger, n = exact match, 2+ two or more, 1-3 one to three
 
-    def __init__(self):
-        self.option_handler()
+    def __init__(self,param_args=[]):
+        self.option_handler(param_args)
         self.log_lvl = int(self.options.verbose)
 
     def custom_options(self, parser):
@@ -53,7 +53,9 @@ class GenericRunner(object):
         self.exit_crit('Plugin implementation must define a workload()!')
 
 
-    def option_handler(self):
+    def option_handler(self, param_args=[]):
+        if not param_args:
+            param_args = None
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
         prog_name = calframe[2][1]
@@ -76,7 +78,7 @@ class GenericRunner(object):
 
         self.custom_options(self.parser)
         try:
-            self.options, self.args = self.parser.parse_args()
+            self.options, self.args = self.parser.parse_args(param_args)
         except SystemExit,exit_code:
             if self.HELP:
                 print self.HELP
@@ -286,8 +288,8 @@ class NagiosPlugin(SubProcessTask):
 
 
 
-    def __init__(self):
-        super(NagiosPlugin,self).__init__()
+    def __init__(self, param_args=[]):
+        super(NagiosPlugin,self).__init__(param_args)
         self._perf_data = []
 
 
@@ -301,6 +303,7 @@ class NagiosPlugin(SubProcessTask):
             raise # normal exit, system requested to terminate
         except:
             self.exit_crit('Plugin implementation crashed!')
+
 
 
     def show_options(self):
