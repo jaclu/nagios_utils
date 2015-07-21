@@ -5,7 +5,7 @@ import os
 import time
 import sys
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 from naglib.timeunits import TimeUnits
 
 
@@ -29,7 +29,6 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
    Currently -o / -n must point to a directory, coming versions should also
    support wildcarding a subset of the files in a directory
 """
-    MSG_LABEL = 'FILE_AGE'
     CMD_LINE_HINT = 'filepath'
     ARGC = '1'  # * = 0 or larger, n = exact match, 2+ two or more, 1-3 one to three
 
@@ -82,11 +81,10 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         if warn and (warn >= crit):
             self.exit_crit('warning age must be less than critical age')
         if not os.path.exists(fname):
+            msg = 'File not found: %s' % fname
             if self.options.missing_warn:
-                lvl = NAG_WARNING
-            else:
-                lvl = NAG_CRITICAL
-            self.exit(lvl, 'File not found: %s' % fname)
+                self.exit_warn(msg)
+            self.exit_crit(msg)
         last_changed = os.stat(fname).st_mtime
         self.log('last changed timestamp for file: %s' % last_changed, 2)
         age = TimeUnits(time.time() - last_changed)
@@ -95,12 +93,10 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         msg = 'Age of file %s is %s' % (fname, age.get())
         self.ensure_size_is_ok(fname)
         if age > crit:
-            code = NAG_CRITICAL
+            self.exit_crit(msg)
         elif warn and (age > warn):
-            code = NAG_WARNING
-        else:
-            code = NAG_OK
-        self.exit(code, msg)
+            self.exit_warn(msg)
+        self.exit_ok(msg)
 
     def check_sorted_path(self):
         f = self.path_arg

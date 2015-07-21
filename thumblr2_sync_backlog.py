@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 
-import os
-import time
-
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 from naglib.timeunits import TimeUnits
 
 import time, os, stat
@@ -15,7 +12,6 @@ def file_age_in_seconds(pathname):
 class ThumblrSyncBackLog(NagiosPlugin):
     VERSION = '1.1.3'  # 2015-03-25 jaclu added perfdata
     DESCRIPTION = "Warns if back-log of thumblr2 files is to large, or oldest file waiting is to old"
-    MSG_LABEL = 'THMBSYNC'
     CMD_LINE_HINT = '/path/to/sync-wait-directory'
 
     def custom_options(self, parser):
@@ -63,7 +59,7 @@ class ThumblrSyncBackLog(NagiosPlugin):
         if count > self.options.size_crit:
             self.exit_crit('%i exceedes critical level: %i' %(count, self.options.size_crit))
         if count > self.options.size_warn:
-            self.exit(NAG_WARNING,'%i exceedes warning level: %i' %(count, self.options.size_warn))
+            self.exit_warn('%i exceedes warning level: %i' %(count, self.options.size_warn))
         ok_msg = '%i items in backlog' % count
 
         if oldest_age:
@@ -72,7 +68,7 @@ class ThumblrSyncBackLog(NagiosPlugin):
                 self.exit_crit( '%s older than %s [%s]' % (os.path.join(self.sync_dir, oldest_file), age_max, t_oldest))
             ok_msg += ', no file older than %s' % t_oldest
 
-        self.exit(NAG_OK, ok_msg)
+        self.exit_ok(ok_msg)
 
 
 

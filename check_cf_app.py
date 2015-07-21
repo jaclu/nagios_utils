@@ -4,7 +4,7 @@ import time
 import parser
 import numpy
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 from naglib.timeunits import TimeUnits
 
 
@@ -18,8 +18,6 @@ Monitors a cloud fusion app for important stats
   -i fewer running instances triggers warning
   -I fewer running instances triggers critical
 """
-    MSG_LABEL = 'CF_APP'
-
     def custom_options(self, parser):
         parser.add_option('-w', '--warning', dest='warning_load', type='float', default=50)
         parser.add_option('-c', '--critical', dest='critical_load', type='float', default=90)
@@ -35,7 +33,7 @@ Monitors a cloud fusion app for important stats
         appname = self.args.pop()
 
         if not self.options.command:
-            self.exit(NAG_CRITICAL, 'param command empty!')
+            self.exit_crit('param command empty!')
 
         if self.options.space:
             cmd = '%s target -s %s' % (self.options.command, self.options.space)
@@ -99,7 +97,7 @@ Monitors a cloud fusion app for important stats
             self.exit_warn(msg + ' WARN: too few running instances!')
         if max_load >= self.options.warning_load:
             self.exit_warn(msg + ' WARN: load max_load over limit!')
-        self.exit(NAG_OK, msg)
+        self.exit_ok(msg)
 
     def line_cleanup(self, org_line):
         line = ''

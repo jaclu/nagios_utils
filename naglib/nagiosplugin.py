@@ -2,8 +2,7 @@
 
 from exceptions import StandardError
 import inspect
-from optparse import OptionParser, IndentedHelpFormatter
-import os.path
+from optparse import OptionParser
 import subprocess
 import sys
 import time
@@ -151,12 +150,46 @@ class GenericRunner(object):
             return
         return
 
-
-
     def log(self, msg, lvl=1):
         if lvl <= self.log_lvl:
             print msg
         return
+
+    def exit_ok(self, msg):
+        self._exit(NAG_OK, msg)
+
+    def exit_warn(self, msg):
+        self._exit(NAG_WARNING, msg)
+
+    def exit_crit(self, msg):
+        self._exit(NAG_CRITICAL, msg)
+
+    def _exit(self, code, msg):
+        # perfdata should be printed after a pipe char, somewhat like this:
+        # OK - load average: 1.15, 0.83, 0.49|load1=1.150;2.000;5.000;0; load5=0.830;2.000;5.000;0; load15=0.490;2.000;5.000;0;
+        if not code in NAG_RESP_CLASSES.keys():
+            self.exit_crit('Bad exit code: %s' % code)
+        s_code = NAG_RESP_CLASSES[code]
+        if self._perf_data:
+            msg += "|"
+            perfs = []
+            for item in self._perf_data:
+                perfs.append('%s=' % item[0] + ';'.join(item[1:]))
+
+            msg += '; '.join(perfs) + ';'
+
+        if self.options.nsca:
+            response = '\t'.join(self.options.nsca.split(',') + ['%s' % code] + [msg]
+                                 ) + '\n'
+            print response
+            sys.exit(0) # we show exit_code in nsca output
+
+        if self.options.verbose == 0:
+            print msg
+        else:
+            self.log('code:%i \t%s' % (code, msg), lvl=1)
+        sys.exit(code)
+        #raise SystemExit, code
 
 
 
@@ -227,9 +260,9 @@ class SubProcessTask(GenericRunner):
     def cmd_execute_abort_on_error(self, cmd, timeout=PROC_TIMEOUT):
         retcode, stdout, stderr = self.cmd_execute_output(cmd, timeout)
         if stderr:
-            self.exit(NAG_CRITICAL, 'Errormsg: %s' % stderr)
+            self.exit_crit('Errormsg: %s' % stderr)
         if retcode:
-            self.exit(NAG_CRITICAL, 'Errorstatus: %i' % retcode)
+            self.exit_crit('Errorstatus: %i' % retcode)
         return stdout
 
 
@@ -332,46 +365,6 @@ class NagiosPlugin(SubProcessTask):
         self._perf_data.append((name, self._perf_value(value)) + tuple(extra_data))
 
 
-
-    def exit_ok(self, msg):
-        self.exit(NAG_OK, msg)
-
-    def exit_warn(self, msg):
-        self.exit(NAG_WARNING, msg)
-
-
-    def exit_crit(self, msg):
-        self.exit(NAG_CRITICAL, msg)
-
-
-    def exit(self, code, msg):
-        # perfdata should be printed after a pipe char, somewhat like this:
-        # OK - load average: 1.15, 0.83, 0.49|load1=1.150;2.000;5.000;0; load5=0.830;2.000;5.000;0; load15=0.490;2.000;5.000;0;
-        if not code in NAG_RESP_CLASSES.keys():
-            self.exit_crit('Bad exit code: %s' % code)
-        s_code = NAG_RESP_CLASSES[code]
-        if self.MSG_LABEL:
-            msg = '%s %s' % (self.MSG_LABEL, msg)
-        if self._perf_data:
-            msg += "|"
-            perfs = []
-            for item in self._perf_data:
-                perfs.append('%s=' % item[0] + ';'.join(item[1:]))
-
-            msg += '; '.join(perfs) + ';'
-
-        if self.options.nsca:
-            response = '\t'.join(self.options.nsca.split(',') + ['%s' % code] + [msg]
-                                 ) + '\n'
-            print response
-            sys.exit(0) # we show exit_code in nsca output
-
-        if self.options.verbose == 0:
-            print msg
-        else:
-            self.log('code:%i \t%s' % (code, msg), lvl=1)
-        sys.exit(code)
-        #raise SystemExit, code
 
 
 

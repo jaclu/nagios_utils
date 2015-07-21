@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import os
 import platform
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 
 
 class LinuxRelease(NagiosPlugin):
@@ -12,7 +11,7 @@ class LinuxRelease(NagiosPlugin):
 
     def workload(self):
         if platform.system() != 'Linux':
-            self.exit(NAG_WARNING, 'This plugin is only meaningfull on Linux systems!')
+            self.exit_warn('This plugin is only meaningfull on Linux systems!')
 
         retcode, stdout, stderr = self.cmd_execute_output('lsb_release -a')
         if retcode:
@@ -22,7 +21,7 @@ class LinuxRelease(NagiosPlugin):
             release_string = s.strip()
         except:
             self.exit_crit('Failed to parse release string')
-        self.exit(NAG_OK, release_string)
+        self.exit_ok(release_string)
 
 if __name__ == "__main__":
     LinuxRelease().run()

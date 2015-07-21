@@ -3,7 +3,7 @@
 import os
 import time
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 from naglib.timeunits import TimeUnits
 
 
@@ -14,7 +14,6 @@ Runs a command with numerical output, and ensures result are in an acceptable
 span (number is parsed as a float).
 
 """
-    MSG_LABEL = 'VALUE'
     CMD_LINE_HINT = "cmd"
 
     def custom_options(self, parser):
@@ -52,19 +51,16 @@ span (number is parsed as a float).
             self.exit_crit("Output (%s) not numeric!" % stdout)
 
         s_result = self.num_repr(result)
+        msg = 'Output (%s)' % s_result + ' %s value - limit (%s)'
         if self.options.max_crit and (result >= self.options.max_crit):
-            self.exit_crit(
-                "Output (%s) critical high value - limit (%s)" % (s_result, self.num_repr(self.options.max_crit)))
+            self.exit_crit(msg % ('critical high', self.num_repr(self.options.max_crit)))
         if self.options.min_crit and (result <= self.options.min_crit):
-            self.exit_crit(
-                "Output (%s) critical low value - limit (%s)" % (s_result, self.num_repr(self.options.min_crit)))
+            self.exit_crit(msg % ('critical low', self.num_repr(self.options.min_crit)))
         if self.options.max_warn and (result >= self.options.max_warn):
-            self.exit(NAG_WARNING,
-                      "Output (%s) warning high value - limit (%s)" % (s_result, self.num_repr(self.options.max_warn)))
+            self.exit_warn(msg % ('warning high', self.num_repr(self.options.max_warn)))
         if self.options.min_warn and (result <= self.options.min_warn):
-            self.exit(NAG_WARNING,
-                      "Output (%s) warning low value - limit (%s)" % (s_result, self.num_repr(self.options.min_warn)))
-        self.exit(NAG_OK, 'Output %s' % s_result)
+            self.exit_warn(msg % ('warning low', self.num_repr(self.options.min_warn)))
+        self.exit_ok('Output %s' % s_result)
 
     def num_repr(self, value):
         if self.is_int:

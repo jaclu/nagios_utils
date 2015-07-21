@@ -9,7 +9,7 @@ try:
 except:
     from urlparse import urlparse
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckSolr(NagiosPlugin):
@@ -100,7 +100,7 @@ class CheckSolr(NagiosPlugin):
         if self.options.count != actual_count:
             self.exit_crit('Expected %i items, found %i - diff %i' % (self.options.count, actual_count,
                                                                       actual_count - self.options.count))
-        self.exit(NAG_OK, 'Itemcount as expected: %i' % self.options.count)
+        self.exit_ok('Itemcount as expected: %i' % self.options.count)
 
 
 if __name__ == "__main__":

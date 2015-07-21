@@ -1,6 +1,6 @@
 #!/usr/bin/python
 """
- check_portal_rev for nagios
+ check_portal_rev.py for nagios
  Copyright 2014: europeana   License: EUPL
  Written by: Jacob.Lundqvist@europeana.eu
  jaclu 2014-04-07 vers 0.1.3
@@ -15,8 +15,7 @@ from naglib.nagiosplugin import NagiosPlugin
 class PortalRev(NagiosPlugin):
     VERSION = '1.1.0'
     DESCRIPTION = "Displays portal version"
-    MSG_LABEL = 'PortVers'
-    CMD_LINE_HINT = 'check_portal_rev host'
+    CMD_LINE_HINT = 'host'
 
     def custom_options(self, parser):
         parser.add_option("-r", "--revision", dest="revision")
@@ -25,8 +24,8 @@ class PortalRev(NagiosPlugin):
         parser.add_option("-u", "--url", dest="url", default="/portal/build.txt")
 
     def workload(self):
-        if len(self.args) < 1:
-            self.exit_help('Mandatory param missing')
+        if len(self.args) != 1:
+            self.exit_help('Exactly one param expected! [%s]' % ' '.join(self.args))
         host = self.args[0]
         cmd = 'curl %s%s' % (host, self.options.url)
         retcode, stdout, stderr = self.cmd_execute_output(cmd)
@@ -36,7 +35,7 @@ class PortalRev(NagiosPlugin):
 
         rev = parts[1]
         build_time = parts[4] + ' ' + parts[5]
-        version = parts[-3]
+        version = parts[-3][:-1]
         branch = parts[-1].replace(')', '')
 
         if self.options.revision:

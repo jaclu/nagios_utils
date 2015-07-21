@@ -6,7 +6,7 @@ If you want to bundle this with nsca you could could trigger it from crontab wit
 
 TMP_FILE=/tmp/NSCA_ApiApps-output
 
-/usr/local/nagiosplugins/check_a9_api --nsca <host>,<svc_description> apps > $TMP_FILE
+/usr/local/nagiosplugins/check_a9_api.py --nsca <host>,<svc_description> apps > $TMP_FILE
 cat  $TMP_FILE | /usr/sbin/send_nsca -H <nagios_host>
 --------------------
 """

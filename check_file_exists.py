@@ -15,8 +15,6 @@ Returns critical if file is missing
   -r negates the check crit/warn is returned if file exists
 
 """
-    MSG_LABEL = 'FILE_EXISTS'
-
     def custom_options(self, parser):
         parser.add_option("-w", '--warn-on-missing', action="store_true", dest="missing_warn", default=False)
         parser.add_option("-r", '--reverse-check', action="store_false", dest="file_should_exist", default=True)
@@ -53,7 +51,7 @@ Returns critical if file is missing
             msg = '%s not present'
 
         self.add_perf_data('found', perf_value, '', '', '0', '100')
-        self.exit(result, msg % fname)
+        self._exit(result, msg % fname)
 
 
 if __name__ == "__main__":

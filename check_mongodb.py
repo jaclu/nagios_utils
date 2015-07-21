@@ -1,21 +1,13 @@
 #!/usr/bin/env python
 
-import os
-import time
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
-# from naglib.timeunits import TimeUnits
-
-import time
-import os
-import stat
+from naglib.nagiosplugin import NagiosPlugin
 import tempfile
 
 
 class CheckMongoDb(NagiosPlugin):
     VERSION = '1.2.1'
     DESCRIPTION = "Warns if back-log of thumblr2 files is to large, or oldest file waiting is to old"
-    MSG_LABEL = 'MongoDB'
     CMD_LINE_HINT = 'database collection/special_query [filter]'
     HELP = """
     If second param contains no dot (.) it is assumed to be a collection
@@ -47,7 +39,7 @@ class CheckMongoDb(NagiosPlugin):
             is_record_count = True
             query = 'db.%s.count()' % query
 
-        f = tempfile.NamedTemporaryFile(prefix="check_mongodb-")
+        f = tempfile.NamedTemporaryFile(prefix="check_mongodb.py-")
         auth = self.auth_me()
         if auth:
             f.write('use admin\n')
@@ -103,7 +95,7 @@ arg_count = len (sys.argv) - 1
 
 if not arg_count:
     print
-    print 'check_mongodb database collection/special_query [post_cmd]'
+    print 'check_mongodb.py database collection/special_query [post_cmd]'
     print
     print '\tFor remote databases use hostname:port/database notation'
     print

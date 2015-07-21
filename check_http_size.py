@@ -7,13 +7,12 @@ If you cant install the nagios check_http you can use this instead...
 import time
 import urllib2
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckHttpSize(NagiosPlugin):
     VERSION = '1.1.0' # added single param option
     DESCRIPTION = "Checks that requested document size is within bounds"
-    MSG_LABEL = 'DOC_SIZE'
     CMD_LINE_HINT = 'url'
     HELP = """
     At least one of -w or -c must be given, and the notation is min:max or a single exact number
@@ -69,7 +68,7 @@ class CheckHttpSize(NagiosPlugin):
             if size < w1 or size > w2:
                 self.exit_warn('%i is out of range' % size)
 
-        self.exit(NAG_OK, 'Acceptable doc size: %i' % size)
+        self.exit_ok('Acceptable doc size: %i' % size)
 
     def check_url(self, url, s_expect='', timeout=10):
         t1 = time.time()

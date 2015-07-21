@@ -11,7 +11,7 @@ if that is not found, nothing bad happens, only scaling up of the passive side
 import time
 from check_cf_app import CheckCfApp
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 
 
 
@@ -22,7 +22,6 @@ VERBS = (TASK_LIST, TASK_TOGGLE)
 class PortalToggler(NagiosPlugin):
     VERSION = '2.2.0'  # added -n toggle
     DESCRIPTION = "lists/toggles production portal"
-    MSG_LABEL = 'PORTAL_TOGGLER'
     CMD_LINE_HINT = 'list / toggle'
     HELP = """
     list          show what app is currently handling production

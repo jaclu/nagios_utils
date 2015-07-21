@@ -7,7 +7,7 @@ If you cant install the nagios check_http you can use this instead...
 import time
 import urllib2
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckHttp(NagiosPlugin):
@@ -33,7 +33,7 @@ class CheckHttp(NagiosPlugin):
         self.check_url(self.options.url, self.options.response)
         t2 = time.time() - t1
         self.add_perf_data('response time', t2)
-        self.exit(NAG_OK, 'Expected result received in %.2f seconds' % t2)
+        self.exit_ok('Expected result received in %.2f seconds' % t2)
 
     def check_url(self, url, s_expect, timeout=10):
         t1 = time.time()

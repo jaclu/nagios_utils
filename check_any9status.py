@@ -7,7 +7,7 @@ If you cant install the nagios check_http you can use this instead...
 import time
 import urllib2
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 
 
 class Any9Status(NagiosPlugin):

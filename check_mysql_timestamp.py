@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 
 import datetime
-import os
-import time
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 from naglib.timeunits import TimeUnits
 
 
@@ -22,8 +20,6 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
   result will use same unit, no fractions only integer params like:
     12m    interperete as 12 minutes,
 """
-    MSG_LABEL = 'FILE_AGE'
-
     def custom_options(self, parser):
         parser.add_option('-w', dest='age_warn')
         parser.add_option('-c', dest='age_crit')
@@ -53,12 +49,10 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         self.log('mysql timestamp: %s' % age, 2)
         msg = 'timestamp is %s old' % age.get()
         if age > crit:
-            code = NAG_CRITICAL
+            self.exit_crit(msg)
         elif age > warn:
-            code = NAG_WARNING
-        else:
-            code = NAG_OK
-        self.exit(code, msg)
+            self.exit_warn(msg)
+        self.exit_ok(msg)
 
 if __name__ == "__main__":
     CheckMysqlTimeStampAge().run()

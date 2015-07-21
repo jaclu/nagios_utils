@@ -3,7 +3,7 @@
 import os
 import platform
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 
 class RestartNeeded(NagiosPlugin):
     VERSION = '1.0.2'
@@ -11,13 +11,13 @@ class RestartNeeded(NagiosPlugin):
 
     def workload(self):
         if platform.system() != 'Linux':
-            self.exit(NAG_WARNING,'This plugin is only meaningfull on Linux systems!')
+            self.exit_warn('This plugin is only meaningfull on Linux systems!')
         distname,version,iid =platform.dist()
         if distname not in ('Ubuntu', 'debian'):
-            self.exit(NAG_WARNING,'This distribution doesnt seem to be debian based (%s)' % distname)
+            self.exit_warn('This distribution doesnt seem to be debian based (%s)' % distname)
         if os.path.isfile('/var/run/reboot-required'):
             self.exit_crit('System needs to be restarted')
-        self.exit(NAG_OK,'System does not need restarting')
+        self.exit_ok('System does not need restarting')
 
 if __name__ == "__main__":
     RestartNeeded().run()

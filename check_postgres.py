@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-# check_postgres for nagios
+# check_postgres.py for nagios
 # Copyright 2014: europeana.eu   License: EUPL
 # Written by: Jacob.Lundqvist@europeana.eu
 # version info - see CheckPostgres header
@@ -9,7 +9,7 @@
 
 import sys
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckPostgres(NagiosPlugin):
@@ -51,7 +51,7 @@ class CheckPostgres(NagiosPlugin):
         if not self.options.query:
             self.exit_crit('No query specified')
         self.run_query(self.options.query)
-        self.exit(NAG_OK, 'test condition true')
+        self.exit_ok('test condition true')
 
     def run_query(self, q):
         cmd = self.build_cmd(q)
@@ -68,7 +68,7 @@ class CheckPostgres(NagiosPlugin):
             result_msg = r
         condition = self.options.condition
         if not condition:
-            self.exit(NAG_OK, result_msg)
+            self.exit_ok(result_msg)
 
         parts = condition.split('x')
         if len(parts) < 2:
@@ -88,7 +88,7 @@ class CheckPostgres(NagiosPlugin):
             self.exit_crit('cmd failed: %s' % self.cmd_strip_password(cmd))
         if stdout.strip().lower() != 't':
             self.exit_crit('condition returned false: %s' % sql)
-        self.exit(NAG_OK, result_msg)
+        self.exit_ok(result_msg)
 
     def build_cmd(self, sql):
         if sql[-1] != ';':
@@ -126,11 +126,11 @@ class CheckPostgres(NagiosPlugin):
         databases = stdout.split()
         if db:
             if db in databases:
-                self.exit(NAG_OK, 'database %s is present' % db)
+                self.exit_ok('database %s is present' % db)
             else:
                 self.exit_crit('database %s missing' % db)
 
-        self.exit(NAG_OK, 'databases: %s' % ' '.join(stdout.split()))
+        self.exit_ok('databases: %s' % ' '.join(stdout.split()))
 
 
 if __name__ == "__main__":
