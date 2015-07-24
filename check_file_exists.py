@@ -55,5 +55,5 @@ Returns critical if file is missing
 
 
 if __name__ == "__main__":
-    CheckFileExists().run()
+    CheckFileExists().run(standalone=True)
 

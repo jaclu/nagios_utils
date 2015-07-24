@@ -189,4 +189,4 @@ class PortalToggler(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    PortalToggler().run()
+    PortalToggler().run(standalone=True)

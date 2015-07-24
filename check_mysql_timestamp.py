@@ -55,5 +55,5 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         self.exit_ok(msg)
 
 if __name__ == "__main__":
-    CheckMysqlTimeStampAge().run()
+    CheckMysqlTimeStampAge().run(standalone=True)
 

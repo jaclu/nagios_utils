@@ -114,4 +114,4 @@ Monitors a cloud fusion app for important stats
 
 
 if __name__ == "__main__":
-    CheckCfApp().run()
+    CheckCfApp().run(standalone=True)

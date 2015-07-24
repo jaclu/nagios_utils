@@ -73,5 +73,5 @@ class ThumblrSyncBackLog(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    ThumblrSyncBackLog().run()
+    ThumblrSyncBackLog().run(standalone=True)
 

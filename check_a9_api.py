@@ -75,4 +75,6 @@ class Any9Api(NagiosPlugin):
             r = parts[1]
         return r.strip()
 
-Any9Api().run()
+
+if __name__ == "__main__":
+    Any9Api().run(standalone=True)

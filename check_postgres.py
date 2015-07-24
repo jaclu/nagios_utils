@@ -134,4 +134,4 @@ class CheckPostgres(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    CheckPostgres().run()
+    CheckPostgres().run(standalone=True)

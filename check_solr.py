@@ -104,5 +104,5 @@ class CheckSolr(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    CheckSolr().run()
+    CheckSolr().run(standalone=True)
 

@@ -114,5 +114,5 @@ class CheckHttpSize(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    CheckHttpSize().run()
+    CheckHttpSize().run(standalone=True)
 

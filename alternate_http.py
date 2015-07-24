@@ -61,5 +61,5 @@ class CheckHttp(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    CheckHttp().run()
+    CheckHttp().run(standalone=True)
 

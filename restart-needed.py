@@ -20,5 +20,5 @@ class RestartNeeded(NagiosPlugin):
         self.exit_ok('System does not need restarting')
 
 if __name__ == "__main__":
-    RestartNeeded().run()
+    RestartNeeded().run(standalone=True)
 

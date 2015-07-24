@@ -24,5 +24,5 @@ class LinuxRelease(NagiosPlugin):
         self.exit_ok(release_string)
 
 if __name__ == "__main__":
-    LinuxRelease().run()
+    LinuxRelease().run(standalone=True)
 

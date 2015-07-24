@@ -71,5 +71,5 @@ span (number is parsed as a float).
 
 
 if __name__ == "__main__":
-    CheckFileAgeUnits().run()
+    CheckFileAgeUnits().run(standalone=True)
 

@@ -34,7 +34,7 @@ class PortalRev(NagiosPlugin):
         parts = stdout.split()
 
         rev = parts[1]
-        build_time = parts[4] + ' ' + parts[5]
+        build_time = parts[4] + '_' + parts[5]
         version = parts[-3][:-1]
         branch = parts[-1].replace(')', '')
 
@@ -54,4 +54,4 @@ class PortalRev(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    PortalRev().run()
+    PortalRev().run(standalone=True)

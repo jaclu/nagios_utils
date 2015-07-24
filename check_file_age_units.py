@@ -166,5 +166,5 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
 
 
 if __name__ == "__main__":
-    CheckFileAgeUnits().run()
+    CheckFileAgeUnits().run(standalone=True)
 

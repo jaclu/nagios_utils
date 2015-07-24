@@ -64,5 +64,5 @@ class Any9Status(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    Any9Status().run()
+    Any9Status().run(standalone=True)
 

@@ -32,6 +32,10 @@ class GenericRunner(object):
     def __init__(self,param_args=[]):
         self.option_handler(param_args)
         self.log_lvl = int(self.options.verbose)
+        self._standalone_mode = True
+        self._result = None
+
+
 
     def custom_options(self, parser):
         """Override for adding local options.
@@ -178,18 +182,21 @@ class GenericRunner(object):
 
             msg += '; '.join(perfs) + ';'
 
-        if self.options.nsca:
-            response = '\t'.join(self.options.nsca.split(',') + ['%s' % code] + [msg]
-                                 ) + '\n'
-            print response
-            sys.exit(0) # we show exit_code in nsca output
+        if self._standalone_mode:
+            if self.options.nsca:
+                response = '\t'.join(self.options.nsca.split(',') + ['%s' % code] + [msg]
+                                     ) + '\n'
+                print response
+                sys.exit(0) # we show exit_code in nsca output
 
-        if self.options.verbose == 0:
-            print msg
+            if self.options.verbose == 0:
+                print msg
+            else:
+                self.log('code:%i \t%s' % (code, msg), lvl=1)
         else:
-            self.log('code:%i \t%s' % (code, msg), lvl=1)
+            self._result = (code, msg)
+
         sys.exit(code)
-        #raise SystemExit, code
 
 
 
@@ -233,8 +240,6 @@ class SubProcessTask(GenericRunner):
         self.log(' exitcode: %i\n stdout: %s\n stderr: %s' % (retcode, stdout, stderr), 3)
         return retcode, stdout, stderr
 
-
-
     def cmd_execute1(self, cmd, timeout=PROC_TIMEOUT):
         "Returns 0 on success, or error message on failure."
         result = 0
@@ -247,15 +252,11 @@ class SubProcessTask(GenericRunner):
                 result += u'\nstderr: %s' % stderr
         return result
 
-
-
     def cmd_execute_raise_on_error(self, cmd, timeout=PROC_TIMEOUT):
         retcode, stdout, stderr = self.cmd_execute_output(cmd, timeout)
         if retcode or stderr:
             raise StandardError('cmd [%s] failed' % cmd)
         return True
-
-
 
     def cmd_execute_abort_on_error(self, cmd, timeout=PROC_TIMEOUT):
         retcode, stdout, stderr = self.cmd_execute_output(cmd, timeout)
@@ -264,8 +265,6 @@ class SubProcessTask(GenericRunner):
         if retcode:
             self.exit_crit('Errorstatus: %i' % retcode)
         return stdout
-
-
 
     def _cmd_purge_io_buffers(self, p):
         try:
@@ -276,7 +275,6 @@ class SubProcessTask(GenericRunner):
             self._cmd_std_out += s_out
         if s_err:
             self._cmd_std_err += s_err
-
 
 
 class NagiosPlugin(SubProcessTask):
@@ -318,26 +316,25 @@ class NagiosPlugin(SubProcessTask):
     VERSION = BASE_VERSION
     MSG_LABEL = '' # optional prefix for the message line
 
-
-
-
     def __init__(self, param_args=[]):
         super(NagiosPlugin,self).__init__(param_args)
         self._perf_data = []
 
-
-
-    def run(self):
+    def run(self, standalone=False):
+        self._standalone_mode = standalone
         try:
             self.show_options()
             self.workload()
             self.exit_crit('Plugin implementation failed to terminate properly!')
         except SystemExit:
-            raise # normal exit, system requested to terminate
+            # normal exit, system requested to terminate
+            if self._standalone_mode:
+                raise  # honors the sys.exit(code) call...
+            else:
+                return self._result
         except:
             self.exit_crit('Plugin implementation crashed!')
-
-
+        return
 
     def show_options(self):
         if self.log_lvl < 1:
@@ -354,8 +351,6 @@ class NagiosPlugin(SubProcessTask):
         for o in opts:
             print o
 
-
-
     def add_perf_data(self, name, value, warning='', critical='',minimum='', maximum=''):
         extra_data = []
         for x in (warning, critical, minimum, maximum):
@@ -363,10 +358,6 @@ class NagiosPlugin(SubProcessTask):
         while extra_data and extra_data[-1] == '':
             extra_data.pop(-1)
         self._perf_data.append((name, self._perf_value(value)) + tuple(extra_data))
-
-
-
-
 
     def _perf_value(self, value):
         if isinstance(value, float):

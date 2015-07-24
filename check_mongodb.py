@@ -88,7 +88,7 @@ class CheckMongoDb(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    CheckMongoDb().run()
+    CheckMongoDb().run(standalone=True)
 
 """
 arg_count = len (sys.argv) - 1
