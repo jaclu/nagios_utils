@@ -9,7 +9,7 @@
 """
 
 
-from naglib.nagiosplugin import NagiosPlugin
+from naglib.nagiosplugin import NagiosPlugin, NAG_MESSAGES, NAG_CRITICAL
 
 
 class PortalRev(NagiosPlugin):
@@ -26,13 +26,12 @@ class PortalRev(NagiosPlugin):
     def workload(self):
         if len(self.args) != 1:
             self.exit_help('Exactly one param expected! [%s]' % ' '.join(self.args))
-        host = self.args[0]
-        cmd = 'curl %s%s' % (host, self.options.url)
-        retcode, stdout, stderr = self.cmd_execute_output(cmd)
-        if retcode:
-            self.exit_crit('Command failed')
-        parts = stdout.split()
 
+        html = self.url_get(self.args[0], self.options.url)
+        parts = html.split()
+
+        if parts[0] != 'Revision':
+            self.exit_warn('No portal revision data detected')
         rev = parts[1]
         build_time = parts[4] + '_' + parts[5]
         version = parts[-3][:-1]
@@ -40,15 +39,18 @@ class PortalRev(NagiosPlugin):
 
         if self.options.revision:
             if rev != self.options.revision:
-                self.exit_crit('ERROR: Revision: %s (expected: %s)' % (rev, self.options.revision))
+                self.exit_crit('%s: Revision: %s (expected: %s)' % (NAG_MESSAGES[NAG_CRITICAL], rev,
+                                                                    self.options.revision))
 
         if self.options.build_time:
             if build_time.find(self.options.build_time) < 0:
-                self.exit_crit('ERROR: Build: %s (expected: %s)' % (build_time, self.options.build_time))
+                self.exit_crit('%s: Build: %s (expected: %s)' % (NAG_MESSAGES[NAG_CRITICAL], build_time,
+                                                                 self.options.build_time))
 
         if self.options.vers:
             if version != self.options.vers:
-                self.exit_crit('ERROR: Version: %s (expected: %s)' % (version, self.options.vers))
+                self.exit_crit('%s: Version: %s (expected: %s)' % (NAG_MESSAGES[NAG_CRITICAL], version,
+                                                                   self.options.vers))
 
         self.exit_ok('OK: vers:%s branch:%s rev:%s build:%s' % (version, branch, rev, build_time))
 

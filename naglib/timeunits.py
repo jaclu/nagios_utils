@@ -28,7 +28,7 @@ class TimeUnits:
 
     def get_by_unit_key(self, s):
         if s not in self.UNITS:
-            print 'get_by_unit_key() bad param'
+            self.log('get_by_unit_key() bad param', 0)
             raise SystemError, 2
         f = self.value / self.UNITS[s][0]
         return int(f)
@@ -38,7 +38,7 @@ class TimeUnits:
         if not unit:
             unit = self.pref_unit
         if unit not in self.UNITS:
-            print 'get_plural_label() bad param'
+            self.log('get_plural_label() bad param', 0)
             raise SystemError, 2
         return self.UNITS[unit][1]
 
@@ -86,13 +86,13 @@ class TimeUnits:
         #
         uc = param[-1]
         if not uc in self.UNITS.keys():
-            print 'Bad unit in param: %s' % param
+            self.log('Bad unit in param: %s' % param, 0)
             raise SystemError, 2
         try:
             value = int(float(param[:-1]))
             unit = self.UNITS[uc][0]
         except:
-            print 'Bad value in param: %s' % param
+            self.log('Bad value in param: %s' % param, 0)
             raise SystemError, 2
 
         # Zero age is perfectly fine for logfiles, so removed check
@@ -139,23 +139,23 @@ class TimeUnits:
 if 0:
     # testing
     for i in (1, 59, 60, 61, 3599, 3600, 3601, 86401, 604861):
-        print 'time:', i, 'Displayed as:', TimeUnits(i).get()
+        print('time:', i, 'Displayed as:', TimeUnits(i).get())
 
     if TimeUnits(65) < TimeUnits(65):
-        print 'lt failed'
+        print('lt failed')
         sys.exit(1)
     if TimeUnits(65) <= TimeUnits(64):
-        print 'le failed'
+        print('le failed')
         sys.exit(1)
     if TimeUnits(65) == TimeUnits(7):
-        print 'eq  failed'
+        print('eq  failed')
         sys.exit(1)
     if TimeUnits(65) != TimeUnits(65):
-        print 'ne failed'
+        print('ne failed')
         sys.exit(1)
     if TimeUnits(32) > TimeUnits(32):
-        print 'gt  failed'
+        print('gt  failed')
         sys.exit(1)
     if TimeUnits(42) >= TimeUnits(65):
-        print 'ge failed'
+        print('ge failed')
         sys.exit(1)

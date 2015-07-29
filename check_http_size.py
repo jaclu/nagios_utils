@@ -11,7 +11,7 @@ from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckHttpSize(NagiosPlugin):
-    VERSION = '1.1.0' # added single param option
+    VERSION = '1.1.0'  # added single param option
     DESCRIPTION = "Checks that requested document size is within bounds"
     CMD_LINE_HINT = 'url'
     HELP = """

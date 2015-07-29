@@ -14,10 +14,10 @@ from check_cf_app import CheckCfApp
 from naglib.nagiosplugin import NagiosPlugin
 
 
-
 TASK_LIST = 'list'
 TASK_TOGGLE = 'toggle'
 VERBS = (TASK_LIST, TASK_TOGGLE)
+
 
 class PortalToggler(NagiosPlugin):
     VERSION = '2.2.0'  # added -n toggle
@@ -44,13 +44,11 @@ class PortalToggler(NagiosPlugin):
 
     PROC_TIMEOUT = 900
 
-
     def custom_options(self, parser):
         parser.add_option("-C", '--command', dest='command', default='cf')
         parser.add_option('-P', '--prefix', dest='plugin_prefix', default='/usr/local/nagiosplugins')
         parser.add_option("-n", '--no_scaledown', dest="no_scaledown", action="store_true", default=False,
                           help='Dont scale down the retiring environ')
-
 
     def workload(self):
         if len(self.args) != 1:
@@ -59,7 +57,7 @@ class PortalToggler(NagiosPlugin):
         if task not in VERBS:
             self.exit_crit('invalid task: %s' % task)
 
-        initially_active, initially_passive = self.task_list() # check what stack is currently active
+        initially_active, initially_passive = self.task_list()  # check what stack is currently active
         msg = 'Currently %s is active' % initially_active
         if task == TASK_LIST:
             self.exit_ok(msg)
@@ -77,15 +75,13 @@ class PortalToggler(NagiosPlugin):
         #
         # Retire the inactive group
         #
-        if self.options.no_scaledown == False:
+        if not self.options.no_scaledown:
             self.activate_stack(group=initially_active, startup=False)
         else:
             self.log('Not scaling down %s' % initially_active)
 
-        open('/tmp/portal_toggle.log','a').write('%s - activated: %s\n' % ( time.asctime(), initially_passive))
+        open('/tmp/portal_toggle.log', 'a').write('%s - activated: %s\n' % (time.asctime(), initially_passive))
         self.exit_ok('portal toggled sccessfully, %s is now active' % initially_passive)
-
-
 
     def task_list(self):
         # check what stack is currently active
@@ -105,7 +101,6 @@ class PortalToggler(NagiosPlugin):
         else:
             passive = 'blue'
         return active, passive
-
 
     def activate_stack(self, group, startup=True):
         """For startup True, all apps are scaled to production level
@@ -131,11 +126,10 @@ class PortalToggler(NagiosPlugin):
             cmd = '%s restart %s' % (self.options.command, app_name)
             stdout = self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
 
-
         if startup:
             final_status = 'active'
             self.log('  Waiting for all apps to beceome ready', 1)
-            time.sleep(10) # give apps some time to start their processing
+            time.sleep(10)  # give apps some time to start their processing
             timeout = time.time() + 900
             while True:
                 all_ok = True

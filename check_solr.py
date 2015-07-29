@@ -65,7 +65,6 @@ class CheckSolr(NagiosPlugin):
             self.exit_crit('No solr service found')
         self.exit_ok('Solr responsive')
 
-
     def check_url(self, url, timeout=10):
         t1 = time.time()
         try:

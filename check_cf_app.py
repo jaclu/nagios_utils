@@ -18,6 +18,7 @@ Monitors a cloud fusion app for important stats
   -i fewer running instances triggers warning
   -I fewer running instances triggers critical
 """
+
     def custom_options(self, parser):
         parser.add_option('-w', '--warning', dest='warning_load', type='float', default=50)
         parser.add_option('-c', '--critical', dest='critical_load', type='float', default=90)
