@@ -3,7 +3,7 @@
 try:
     from exceptions import StandardError
 except:
-    pass # was py3
+    pass  # was py3
 import inspect
 from optparse import OptionParser
 import subprocess
@@ -34,6 +34,7 @@ NAG_MESSAGES = {
 
 }
 
+
 class GenericRunner(object):
     VERSION = 'unknown'  # override to something meaningfull
 
@@ -42,13 +43,18 @@ class GenericRunner(object):
     DESCRIPTION = None
     ARGC = '*'  # * = 0 or larger, n = exact match, 2+ two or more, 1-3 one to three
 
-    def __init__(self,param_args=[]):
-        self.log_lvl = 1 # initial value used during option_handler
-        #self._standalone_mode = True
+    def __init__(self, param_args=None):
+        if not param_args:
+            param_args = []
+        self.log_lvl = 1  # initial value used during option_handler
+        # self._standalone_mode = True
+        self._result = None
+        self.options = None
+        self.args = []
+        self.parser = None
+        self._perf_data = []
         self.option_handler(param_args)
         self.log_lvl = int(self.options.verbose)
-        self._result = None
-
 
 
     def custom_options(self, parser):
@@ -60,7 +66,6 @@ class GenericRunner(object):
         no return is expected
         """
 
-
     def workload(self):
         """
         workload() should always be terminated with: self.exit(code, msg)
@@ -69,8 +74,9 @@ class GenericRunner(object):
         """
         self.exit_crit('Plugin implementation must define a workload()!')
 
-
-    def option_handler(self, param_args=[]):
+    def option_handler(self, param_args=None):
+        if not param_args:
+            param_args = []
         if not param_args:
             param_args = None
         curframe = inspect.currentframe()
@@ -81,7 +87,7 @@ class GenericRunner(object):
         else:
             usage = None
         self.parser = OptionParser(usage,
-                                   description = self.DESCRIPTION,
+                                   description=self.DESCRIPTION,
                                    version=self.VERSION,
                                    )
 
@@ -99,20 +105,18 @@ class GenericRunner(object):
         except SystemExit as exit_code:
             if self.HELP:
                 self.log(self.HELP)
-            raise # exiting program
+            raise  # exiting program
         self.verify_argcount()
 
-
-
-    def exit_help(self,msg=None):
-        "Convenient exit call, on param check failure"
+    def exit_help(self, msg=None):
+        """Convenient exit call, on param check failure"""
         sys.argv.append('-h')
         try:
             self.parser.parse_args()
         except:
             pass
 
-        self.log('',0)
+        self.log('', 0)
 
         if self.options.verbose > 0:
             self.log('Defaults:')
@@ -124,14 +128,11 @@ class GenericRunner(object):
             self.log('*** %s' % msg, 0)
         self.exit_crit('bad param')
 
-
-
-
     def verify_argcount(self):
         argc = len(self.args)
 
         if self.ARGC == '*':
-            return # anything goes
+            return  # anything goes
 
         #
         # Exact count
@@ -167,7 +168,7 @@ class GenericRunner(object):
         if len(l) > 1:
             imin = l[0]
             imax = l[1]
-            if (argc < imin) or (argc>imax):
+            if (argc < imin) or (argc > imax):
                 self.exit_help('argument count outside accepted span (%s)' % self.ARGC)
             return
         return
@@ -183,6 +184,7 @@ class GenericRunner(object):
         except requests.exceptions.Timeout as e:
             self.exit_warn('Timeout')
         except:
+            self.exit_crit('Unknown request error')
             # TODO: this should not be here...
             self.exit_crit('Failed to retrieve revision data')
         if not page.status_code == 200:
@@ -211,9 +213,7 @@ class GenericRunner(object):
         self._exit(NAG_CRITICAL, '%s: %s' % (NAG_MESSAGES[NAG_CRITICAL], msg))
 
     def _exit(self, code, msg):
-        # perfdata should be printed after a pipe char, somewhat like this:
-        # OK - load average: 1.15, 0.83, 0.49|load1=1.150;2.000;5.000;0; load5=0.830;2.000;5.000;0; load15=0.490;2.000;5.000;0;
-        if not code in NAG_RESP_CLASSES.keys():
+        if code not in NAG_RESP_CLASSES.keys():
             self.exit_crit('Bad exit code: %s' % code)
         s_code = NAG_RESP_CLASSES[code]
         if self._perf_data:
@@ -228,8 +228,8 @@ class GenericRunner(object):
             if self.options.nsca:
                 response = '\t'.join(self.options.nsca.split(',') + ['%s' % code] + [msg]
                                      ) + '\n'
-                self.log(response,0)
-                sys.exit(0) # we show exit_code in nsca output
+                self.log(response, 0)
+                sys.exit(0)  # we show exit_code in nsca output
 
             if self.options.verbose == 0:
                 self.log(msg, 0)
@@ -241,37 +241,34 @@ class GenericRunner(object):
         sys.exit(code)
 
 
-
-
-
-
-
-
 class SubProcessTask(GenericRunner):
     PROC_TIMEOUT = 30
 
+    def __init__(self, param_args=None):
+        super(SubProcessTask, self).__init__(param_args)
+        self._cmd_std_out = u''
+        self._cmd_std_err = u''
+
     def cmd_execute_output(self, cmd, timeout=PROC_TIMEOUT):
-        "Returns retcode,stdout,stderr."
+        """Returns retcode,stdout,stderr."""
         if isinstance(cmd, (list, tuple)):
             cmd = ' '.join(cmd)
         self.log('External command: [%s]' % cmd, 3)
-        self._cmd_std_out = u''
-        self._cmd_std_err = u''
         try:
             t_fin = time.time() + timeout
             p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            while p.poll() == None and t_fin > time.time():
+            while p.poll() is None and t_fin > time.time():
                 time.sleep(0.1)
 
-            if p.poll() == None:
+            if p.poll() is None:
                 stderr = u'Timeout for command %s' % cmd
                 self.log(u'*** %s' % stderr)
                 self._cmd_purge_io_buffers(p)
                 self.log(u'stdout: %s' % self._cmd_std_out)
                 self.log(u'stderr: %s' % self._cmd_std_err)
-                return 1,u'',stderr
+                return 1, u'', stderr
 
-            self._cmd_purge_io_buffers(p) # do last one to ensure we got everything
+            self._cmd_purge_io_buffers(p)  # do last one to ensure we got everything
             retcode = p.returncode
             stdout = self._cmd_std_out
             stderr = self._cmd_std_err
@@ -283,7 +280,7 @@ class SubProcessTask(GenericRunner):
         return retcode, stdout, stderr
 
     def cmd_execute1(self, cmd, timeout=PROC_TIMEOUT):
-        "Returns 0 on success, or error message on failure."
+        """Returns 0 on success, or error message on failure."""
         result = 0
         retcode, stdout, stderr = self.cmd_execute_output(cmd, timeout)
         if retcode or stdout or stderr:
@@ -318,6 +315,14 @@ class SubProcessTask(GenericRunner):
         if s_err:
             self._cmd_std_err += s_err.decode("utf-8")
         return
+
+
+def _perf_value(value):
+    if isinstance(value, float):
+        r = '%.2f' % value
+    else:
+        r = str(value)
+    return r
 
 
 class NagiosPlugin(SubProcessTask):
@@ -355,13 +360,15 @@ class NagiosPlugin(SubProcessTask):
       Sample item: ('load1', '1.150', '2.000', '5.000','0')
     """
 
-    BASE_VERSION = '1.6.1' # added nsca global option
+    BASE_VERSION = '1.6.1'  # added nsca global option
     VERSION = BASE_VERSION
-    MSG_LABEL = '' # optional prefix for the message line
+    MSG_LABEL = ''  # optional prefix for the message line
 
-    def __init__(self, param_args=[]):
-        self._perf_data = []
-        super(NagiosPlugin,self).__init__(param_args)
+    def __init__(self, param_args=None):
+        if not param_args:
+            param_args = []
+        self._standalone_mode = False
+        super(NagiosPlugin, self).__init__(param_args)
 
     def run(self, standalone=False, ignore_verbose=False):
         self._standalone_mode = standalone
@@ -399,21 +406,13 @@ class NagiosPlugin(SubProcessTask):
             self.log('  Args: %s' % ' '.join(self.args), 0)
         return
 
-
-    def add_perf_data(self, name, value, warning='', critical='',minimum='', maximum=''):
+    def add_perf_data(self, name, value, warning='', critical='', minimum='', maximum=''):
         extra_data = []
         for x in (warning, critical, minimum, maximum):
-            extra_data.append(self._perf_value(x))
+            extra_data.append(_perf_value(x))
         while extra_data and extra_data[-1] == '':
             extra_data.pop(-1)
-        self._perf_data.append((name, self._perf_value(value)) + tuple(extra_data))
-
-    def _perf_value(self, value):
-        if isinstance(value, float):
-            r = '%.2f' % value
-        else:
-            r = str(value)
-        return r
+        self._perf_data.append((name, _perf_value(value)) + tuple(extra_data))
 
 
 

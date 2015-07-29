@@ -3,8 +3,7 @@
 import os
 import time
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK, NAG_RESP_CLASSES, NAG_MESSAGES
-from naglib.timeunits import TimeUnits
+from naglib.nagiosplugin import NagiosPlugin, NAG_WARNING, NAG_CRITICAL, NAG_OK, NAG_MESSAGES
 
 
 class CheckFileExists(NagiosPlugin):

@@ -28,6 +28,7 @@ class Any9Status(NagiosPlugin):
         if not parts:
             self.exit_crit('%s does not look like a status page' % self.options.url)
         for s in parts:
+            module = ''
             try:
                 module = s.split('\n')[1].strip()
                 status = s.split('<span class="component-status">')[1].split('</')[0].strip()
@@ -57,6 +58,7 @@ class Any9Status(NagiosPlugin):
             if time.time() > t1 + timeout:
                 self.exit_crit('timeout!')
             self.exit_crit('unknown failure processing url')
+        # noinspection PyUnboundLocalVariable
         if f.code != 200:
             self.exit_crit('%s %s' % (f.code, f.msg))
         content = f.read()

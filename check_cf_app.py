@@ -1,11 +1,23 @@
 #!/usr/bin/python
 
 import time
-import parser
 import numpy
 
 from naglib.nagiosplugin import NagiosPlugin
-from naglib.timeunits import TimeUnits
+
+
+def line_cleanup(org_line):
+    line = ''
+    esc_mode = False
+    for c in org_line:
+        if c == '\x1b':
+            esc_mode = True
+        if esc_mode and c == 'm':
+            esc_mode = False
+            continue  # dont store the m char
+        if not esc_mode:
+            line += c
+    return line.strip()
 
 
 class CheckCfApp(NagiosPlugin):
@@ -19,16 +31,17 @@ Monitors a cloud fusion app for important stats
   -I fewer running instances triggers critical
 """
 
-    def custom_options(self, parser):
-        parser.add_option('-w', '--warning', dest='warning_load', type='float', default=50)
-        parser.add_option('-c', '--critical', dest='critical_load', type='float', default=90)
-        parser.add_option("-C", '--command', dest='command', default='cf')
-        parser.add_option("-s", '--space', dest='space')
-        parser.add_option('-i', '--inst-warn', dest='warn_instances', type='int', default=0)
-        parser.add_option('-I', '--inst-crit', dest='crit_instances', type='int', default=0)
-        parser.add_option("-p", '--ping', action="store_true", dest="do_ping", default=False)
+    def custom_options(self, parser2):
+        parser2.add_option('-w', '--warning', dest='warning_load', type='float', default=50)
+        parser2.add_option('-c', '--critical', dest='critical_load', type='float', default=90)
+        parser2.add_option("-C", '--command', dest='command', default='cf')
+        parser2.add_option("-s", '--space', dest='space')
+        parser2.add_option('-i', '--inst-warn', dest='warn_instances', type='int', default=0)
+        parser2.add_option('-I', '--inst-crit', dest='crit_instances', type='int', default=0)
+        parser2.add_option("-p", '--ping', action="store_true", dest="do_ping", default=False)
 
     def workload(self):
+        stdout = ''
         if len(self.args) != 1:
             self.exit_crit('exactly one appname must be supplied as param')
         appname = self.args.pop()
@@ -59,7 +72,7 @@ Monitors a cloud fusion app for important stats
         max_load = inst_count = run_count = 0
         for org_line in stdout.split('\n'):
             self.log('Orgline: %s' % org_line, 4)
-            line = self.line_cleanup(org_line)
+            line = line_cleanup(org_line)
             self.log('Unescaped line: %s' % line, 4)
             if not line or line[0] != '#':
                 continue
@@ -86,7 +99,7 @@ Monitors a cloud fusion app for important stats
         if not run_count:
             self.exit_warn('No instances running!')
 
-        avg_load = numpy.mean(loads)
+        avg_load = numpy.mean(loads)  # TODO cast to right type
         msg = 'Instances:%i/%i maxload:%.1f avgload:%.1f' % (run_count, inst_count, max_load, avg_load)
         self.add_perf_data('maxload', max_load, self.options.warning_load, self.options.critical_load, '0')
         self.add_perf_data('avgload', avg_load, self.options.warning_load, self.options.critical_load, '0')
@@ -99,19 +112,6 @@ Monitors a cloud fusion app for important stats
         if max_load >= self.options.warning_load:
             self.exit_warn(msg + ' WARN: load max_load over limit!')
         self.exit_ok(msg)
-
-    def line_cleanup(self, org_line):
-        line = ''
-        esc_mode = False
-        for c in org_line:
-            if c == '\x1b':
-                esc_mode = True
-            if esc_mode and c == 'm':
-                esc_mode = False
-                continue  # dont store the m char
-            if not esc_mode:
-                line += c
-        return line.strip()
 
 
 if __name__ == "__main__":

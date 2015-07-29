@@ -10,10 +10,9 @@
 
 import os
 import sys
-from subprocess import Popen,PIPE
+from subprocess import Popen, PIPE
 
 nag_check_cmd = '/usr/lib/nagios/plugins/check_apt'
-
 
 
 if not os.path.exists(nag_check_cmd):
@@ -25,7 +24,7 @@ try:
     a = Popen(nag_check_cmd, stdout=PIPE)
     a.wait()
     line = a.stdout.readline().strip()
-    relevant_line=line.split(':')[1].strip()
+    relevant_line = line.split(':')[1].strip()
     crits = relevant_line.split('(')[1].split('(')[0][:-2]
     crit_count = int(crits.split()[0])
     reg_count = int(relevant_line.split()[0])
@@ -37,7 +36,7 @@ if crit_count:
     print '%s' % crits
     sys.exit(1)
 
-if 0:# reg_count:
+if 0:  # reg_count:
     print '%s' % relevant_line
     sys.exit(1)
     

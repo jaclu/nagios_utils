@@ -7,9 +7,16 @@
 
 #  -U thumblr -P sdkhjkh54df -d thumblr2 -Q 'select count(*) from plug_uris_uri' -c 'x > 10'
 
-import sys
-
 from naglib.nagiosplugin import NagiosPlugin
+
+
+def cmd_strip_password(cmd):
+    if cmd.find('PGPASSWORD') < 0:
+        return cmd  # pw not used
+    # strip until first whitespace'
+    parts = cmd.split()
+    r = 'PGPASSWORD=xxxxxxx ' + ' '.join(parts[1:])
+    return r
 
 
 class CheckPostgres(NagiosPlugin):
@@ -57,7 +64,7 @@ class CheckPostgres(NagiosPlugin):
         cmd = self.build_cmd(q)
         retcode, stdout, stderr = self.cmd_execute_output(cmd)
         if retcode:
-            self.exit_crit('cmd failed: %s' % self.cmd_strip_password(cmd))
+            self.exit_crit('cmd failed: %s' % cmd_strip_password(cmd))
         r = stdout.strip()
         if self.options.label:
             label = self.options.label
@@ -85,7 +92,7 @@ class CheckPostgres(NagiosPlugin):
         cmd = self.build_cmd('SELECT %s' % sql)
         retcode, stdout, stderr = self.cmd_execute_output(cmd)
         if retcode:
-            self.exit_crit('cmd failed: %s' % self.cmd_strip_password(cmd))
+            self.exit_crit('cmd failed: %s' % cmd_strip_password(cmd))
         if stdout.strip().lower() != 't':
             self.exit_crit('condition returned false: %s' % sql)
         self.exit_ok(result_msg)
@@ -106,14 +113,6 @@ class CheckPostgres(NagiosPlugin):
         cmd += ' -t -c "%s"' % sql
         return cmd
 
-    def cmd_strip_password(self, cmd):
-        if cmd.find('PGPASSWORD') < 0:
-            return cmd  # pw not used
-        # strip until first whitespace'
-        parts = cmd.split()
-        r = 'PGPASSWORD=xxxxxxx ' + ' '.join(parts[1:])
-        return r
-
     def listdb(self):
         db = self.options.database
         self.options.database = ''
@@ -121,7 +120,7 @@ class CheckPostgres(NagiosPlugin):
         # cmd = 'psql -t -U postgres -c "SELECT datname FROM pg_database WHERE datistemplate = false;"'
         retcode, stdout, stderr = self.cmd_execute_output(cmd)
         if retcode:
-            self.exit_crit('Command failed (%i): %s' % (retcode, self.cmd_strip_password(cmd)))
+            self.exit_crit('Command failed (%i): %s' % (retcode, cmd_strip_password(cmd)))
 
         databases = stdout.split()
         if db:

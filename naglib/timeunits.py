@@ -1,7 +1,7 @@
 import datetime
 
 
-class TimeUnits:
+class TimeUnits(object):
     UNIT_SECOND = 1
     UNIT_MINUTE = UNIT_SECOND * 60
     UNIT_HOUR = UNIT_MINUTE * 60
@@ -12,88 +12,97 @@ class TimeUnits:
              'm': (UNIT_MINUTE, 'mins'),
              'h': (UNIT_HOUR, 'hours'),
              'd': (UNIT_DAY, 'days'),
-             'w': (UNIT_WEEK, 'weeks'),
-              }
+             'w': (UNIT_WEEK, 'weeks'), }
 
-    def __init__(self, sparam='', date_time=''):
+    def __init__(self, sparam=None, date_time=None):
+        """sparam should be int (seconds) or string, single unit with a suffix as above"""
         # value is always stored as seconds
         if sparam:
             self.value = self._parse_sparam(sparam)
         elif date_time:
-            dt = datetime.datetime.now() - date_time
+            dt = datetime.datetime.now() - date_time  # TODO ensure types match
             self.value = dt.days * (24 * 60 * 60) + dt.seconds
         else:
             self.value = 0
+        if self.value < 0:
+            raise ValueError('times can not be negative')
         self.pref_unit = self._calculate_pref_unit()
 
     def get_by_unit_key(self, s):
         if s not in self.UNITS:
-            self.log('get_by_unit_key() bad param', 0)
-            raise SystemError, 2
+            raise SystemError('get_by_unit_key() bad param')
         f = self.value / self.UNITS[s][0]
         return int(f)
 
     def get_plural_label(self, unit=''):
-        "if no unit given, the prefered (largest where value is > 1) is used"
+        """if no unit given, the prefered (largest where value is > 1) is used"""
         if not unit:
             unit = self.pref_unit
         if unit not in self.UNITS:
-            self.log('get_plural_label() bad param', 0)
-            raise SystemError, 2
+            raise SystemError('get_plural_label() bad param')
         return self.UNITS[unit][1]
 
     def get_rounded(self):
-        "Display value in pref notation."
-        i = self.get_by_unit_key(self.pref_unit)
-        s = self.UNITS[self.pref_unit][1]
+        """Display value in pref notation."""
+        #  i = self.get_by_unit_key(self.pref_unit)  # TODO seems not to be used...
+        #  s = self.UNITS[self.pref_unit][1]  # TODO seems not to be used...
         return '%i %s' % (self.get_by_unit_key(self.pref_unit), self.UNITS[self.pref_unit][1])
 
     def get(self):
         lst = []
         remainder = self.value
+        i2 = 0
+        c = 'w'
         for c in ('w', 'd', 'h', 'm', 's'):
             if remainder >= self.UNITS[c][0]:
-                i = int(remainder / self.UNITS[c][0])
-                remainder -= i * self.UNITS[c][0]
-                lst.append('%i %s' % (i, self.UNITS[c][1]))
+                i2 = int(remainder / self.UNITS[c][0])
+                remainder -= i2 * self.UNITS[c][0]
+                lst.append('%i %s' % (i2, self.UNITS[c][1]))
         if not lst:
             # handling zero file age
             lst = ['0 %s' % self.UNITS[c][1]]
         return ', '.join(lst)
 
     def _calculate_pref_unit(self):
-        i = self.value
+        i2 = self.value
         unit_value = self.UNIT_SECOND
         for u in (self.UNIT_WEEK, self.UNIT_DAY, self.UNIT_HOUR, self.UNIT_MINUTE,):
-            if i >= u:
+            if i2 >= u:
                 unit_value = u
-                i = int(i / u)
+                i2 = int(i2 / u)
                 break
         for k in self.UNITS.keys():
             if self.UNITS[k][0] == unit_value:
                 unit = k
                 break
-        return unit
+        return unit  # TODO ensure unit is always set
 
     def _parse_sparam(self, param):
         try:
             int(param)
             param = '%ss' % param
         except:
+            if param.find(',') > -1:
+                raise ValueError('multple entities detected')
             pass
+        #
+        # Ensure first char is numeric
+        #
+        try:
+            int(param[0])
+        except:
+            raise ValueError('param doesnt seem to be numeric')
         #
         # Assume last char is the unit
         #
         uc = param[-1]
-        if not uc in self.UNITS.keys():
-            self.log('Bad unit in param: %s' % param, 0)
-            raise SystemError, 2
+        if uc not in self.UNITS.keys():
+            raise SystemError('Bad unit in param: %s' % param)
         try:
             value = int(float(param[:-1]))
             unit = self.UNITS[uc][0]
         except:
-            self.log('Bad value in param: %s' % param, 0)
-            raise SystemError, 2
+            raise ValueError('Bad value in param: %s' % param)
 
         # Zero age is perfectly fine for logfiles, so removed check
         # if value == 0:
@@ -105,16 +114,6 @@ class TimeUnits:
     def __str__(self):
         return self.get()
 
-    def __lt__(self, other):
-        if self.value < other.value:
-            return True
-        return False
-
-    def __le__(self, other):
-        if self.value <= other.value:
-            return True
-        return False
-
     def __eq__(self, other):
         if self.value == other.value:
             return True
@@ -122,6 +121,16 @@ class TimeUnits:
 
     def __ne__(self, other):
         if self.value != other.value:
+            return True
+        return False
+
+    def __lt__(self, other):
+        if self.value < other.value:
+            return True
+        return False
+
+    def __le__(self, other):
+        if self.value <= other.value:
             return True
         return False
 
@@ -135,27 +144,8 @@ class TimeUnits:
             return True
         return False
 
+    def __add__(self, other):
+        return TimeUnits(self.value + other.value)
 
-if 0:
-    # testing
-    for i in (1, 59, 60, 61, 3599, 3600, 3601, 86401, 604861):
-        print('time:', i, 'Displayed as:', TimeUnits(i).get())
-
-    if TimeUnits(65) < TimeUnits(65):
-        print('lt failed')
-        sys.exit(1)
-    if TimeUnits(65) <= TimeUnits(64):
-        print('le failed')
-        sys.exit(1)
-    if TimeUnits(65) == TimeUnits(7):
-        print('eq  failed')
-        sys.exit(1)
-    if TimeUnits(65) != TimeUnits(65):
-        print('ne failed')
-        sys.exit(1)
-    if TimeUnits(32) > TimeUnits(32):
-        print('gt  failed')
-        sys.exit(1)
-    if TimeUnits(42) >= TimeUnits(65):
-        print('ge failed')
-        sys.exit(1)
+    def __sub__(self, other):
+        return TimeUnits(self.value - other.value)

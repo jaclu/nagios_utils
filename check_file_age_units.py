@@ -3,7 +3,6 @@
 import glob
 import os
 import time
-import sys
 
 from naglib.nagiosplugin import NagiosPlugin
 from naglib.timeunits import TimeUnits
@@ -61,14 +60,13 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         if not self.options.age_crit:
             self.exit_crit('-c options must be specified!')
 
+        warn = None
         if self.options.age_warn:
             try:
                 warn = TimeUnits(self.options.age_warn)
             except:
                 self.exit_help('invalid syntax for option -w: %s' % self.options.age_warn)
-        else:
-            warn = None
-
+        crit = None
         try:
             crit = TimeUnits(self.options.age_crit)
         except:
@@ -110,7 +108,7 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
 
     def check_directory(self):
         #
-        f = self.path_arg
+        wd = f = self.path_arg
         self.log('check_directory(%s)' % f, lvl=1)
         if f[-1] == os.path.sep:
             wd = os.path.dirname(f)
@@ -127,6 +125,7 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         self.check_one_file(full_name)
 
     def safe_file_find_in_dir(self, wd):
+        fname = ''
         if 0:  # sys.version >= '2.5':
             try:
                 if self.options.oldest:

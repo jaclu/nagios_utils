@@ -12,13 +12,21 @@ cat  $TMP_FILE | /usr/sbin/send_nsca -H <nagios_host>
 """
 __author__ = 'jaclu'
 
-import sys
 import time
 
 import os
 
 from naglib.nagiosplugin import NagiosPlugin
 from naglib.timeunits import TimeUnits
+
+
+def extract_cloud_foundry_error_details(s):
+    parts = s.split('FAILED')
+    if len(parts) < 2:
+        r = ''  # nothing found
+    else:
+        r = parts[1]
+    return r.strip()
 
 
 class Any9Api(NagiosPlugin):
@@ -52,7 +60,7 @@ class Any9Api(NagiosPlugin):
         t2 = time.time() - t1
         if stderr or retcode:
             self.log('cmd took %.2f seconds' % t2)  # since perf data wont show it...
-            err_details = self.extractCloudFoundryErrorDetails(stdout)
+            err_details = extract_cloud_foundry_error_details(stdout)
             self.add_perf_data('response time', self.options.errvalue, warning=self.options.warning,
                                critical=self.options.critical, minimum=self.options.errvalue)
             self.exit_crit('Errormsg: %s' % err_details or stderr)
@@ -66,14 +74,6 @@ class Any9Api(NagiosPlugin):
             self.exit_warn(msg)
         else:
             self.exit_crit(msg)
-
-    def extractCloudFoundryErrorDetails(self, s):
-        parts = s.split('FAILED')
-        if len(parts) < 2:
-            r = ''  # nothing found
-        else:
-            r = parts[1]
-        return r.strip()
 
 
 if __name__ == "__main__":

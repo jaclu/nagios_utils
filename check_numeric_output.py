@@ -1,11 +1,6 @@
 #!/usr/bin/env python
 
-import os
-import time
-
-from naglib.nagiosplugin import NagiosPlugin, NAG_MESSAGES, NAG_WARNING, NAG_CRITICAL
-from naglib.timeunits import TimeUnits
-
+from naglib.nagiosplugin import NagiosPlugin
 
 class CheckNumericOutput(NagiosPlugin):
     VERSION = '1.0.1'
@@ -15,6 +10,10 @@ span (number is parsed as a float).
 
 """
     CMD_LINE_HINT = "cmd"
+
+    def __init__(self, param_args=None):
+        super(CheckNumericOutput, self).__init__(param_args)
+        self.is_int = False
 
     def custom_options(self, parser):
         parser.add_option('-w', dest='min_warn', type="float", help='warning  if <= this')
