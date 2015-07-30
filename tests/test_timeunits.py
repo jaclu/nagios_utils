@@ -70,8 +70,8 @@ class TimeunitsTestCase(TestCase):
         try:
             TimeUnits('1q')
             raise AttributeError('1q should have triggered exception')
-        except SystemError as e:
-            self.assertEqual(e.message, 'Bad unit in param: 1q', 'Ensure correct msg for bad unit')
+        except ValueError as e:
+            self.assertEqual(e.args[0], 'Bad unit in param: 1q', 'Ensure correct msg for bad unit')
 
     def test_negative_time(self):
         with self.assertRaises(ValueError):

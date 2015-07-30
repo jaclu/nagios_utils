@@ -47,7 +47,7 @@ class GenericRunner(object):
         if not param_args:
             param_args = []
         self.log_lvl = 1  # initial value used during option_handler
-        # self._standalone_mode = True
+        self._standalone_mode = True
         self._result = None
         self.options = None
         self.args = []
@@ -77,8 +77,6 @@ class GenericRunner(object):
     def option_handler(self, param_args=None):
         if not param_args:
             param_args = []
-        if not param_args:
-            param_args = None
         curframe = inspect.currentframe()
         calframe = inspect.getouterframes(curframe, 2)
         prog_name = calframe[2][1]
@@ -105,14 +103,14 @@ class GenericRunner(object):
         except SystemExit as exit_code:
             if self.HELP:
                 self.log(self.HELP)
-            raise  # exiting program
+            raise #SystemExit(0) # exiting program after displaying help
         self.verify_argcount()
 
     def exit_help(self, msg=None):
         """Convenient exit call, on param check failure"""
         sys.argv.append('-h')
         try:
-            self.parser.parse_args()
+            self.parser.parse_args()  # trigger a help printout
         except:
             pass
 
@@ -198,18 +196,18 @@ class GenericRunner(object):
         return
 
     def exit_ok(self, msg):
-        if msg.find(':') > -1:
-            print('>>>>>>> exit_ok msg contains :')
+        if msg.find('OK:') > -1:
+            print('>>>>>>> exit_ok msg contains : - %s' % msg)
         self._exit(NAG_OK, '%s: %s' % (NAG_MESSAGES[NAG_OK], msg))
 
     def exit_warn(self, msg):
-        if msg.find(':') > -1:
-            print('>>>>>>> exit_warn msg contains :')
+        if msg.find('WARN:') > -1:
+            print('>>>>>>> exit_warn msg contains : - %s' % msg)
         self._exit(NAG_WARNING, '%s: %s' % (NAG_MESSAGES[NAG_WARNING], msg))
 
     def exit_crit(self, msg):
-        if msg.find(':') > -1:
-            print('>>>>>>> exit_crit msg contains :')
+        if msg.find('CRIT:') > -1:
+            print('>>>>>>> exit_crit msg contains : - %s' % msg)
         self._exit(NAG_CRITICAL, '%s: %s' % (NAG_MESSAGES[NAG_CRITICAL], msg))
 
     def _exit(self, code, msg):
@@ -365,10 +363,10 @@ class NagiosPlugin(SubProcessTask):
     MSG_LABEL = ''  # optional prefix for the message line
 
     def __init__(self, param_args=None):
+        super(NagiosPlugin, self).__init__(param_args)
         if not param_args:
             param_args = []
         self._standalone_mode = False
-        super(NagiosPlugin, self).__init__(param_args)
 
     def run(self, standalone=False, ignore_verbose=False):
         self._standalone_mode = standalone

@@ -86,18 +86,11 @@ class TimeUnits(object):
                 raise ValueError('multple entities detected')
             pass
         #
-        # Ensure first char is numeric
-        #
-        try:
-            int(param[0])
-        except:
-            raise ValueError('param doesnt seem to be numeric')
-        #
         # Assume last char is the unit
         #
         uc = param[-1]
         if uc not in self.UNITS.keys():
-            raise SystemError('Bad unit in param: %s' % param)
+            raise ValueError('Bad unit in param: %s' % param)
         try:
             value = int(float(param[:-1]))
             unit = self.UNITS[uc][0]

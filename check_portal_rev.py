@@ -39,20 +39,17 @@ class PortalRev(NagiosPlugin):
 
         if self.options.revision:
             if rev != self.options.revision:
-                self.exit_crit('%s: Revision: %s (expected: %s)' % (NAG_MESSAGES[NAG_CRITICAL], rev,
-                                                                    self.options.revision))
+                self.exit_crit('Revision: %s (expected: %s)' % (rev, self.options.revision))
 
         if self.options.build_time:
             if build_time.find(self.options.build_time) < 0:
-                self.exit_crit('%s: Build: %s (expected: %s)' % (NAG_MESSAGES[NAG_CRITICAL], build_time,
-                                                                 self.options.build_time))
+                self.exit_crit('Build: %s (expected: %s)' % (build_time, self.options.build_time))
 
         if self.options.vers:
             if version != self.options.vers:
-                self.exit_crit('%s: Version: %s (expected: %s)' % (NAG_MESSAGES[NAG_CRITICAL], version,
-                                                                   self.options.vers))
+                self.exit_crit('Version: %s (expected: %s)' % (version, self.options.vers))
 
-        self.exit_ok('OK: vers:%s branch:%s rev:%s build:%s' % (version, branch, rev, build_time))
+        self.exit_ok('vers:%s branch:%s rev:%s build:%s' % (version, branch, rev, build_time))
 
 
 if __name__ == "__main__":

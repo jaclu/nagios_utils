@@ -62,7 +62,7 @@ class AlternateHttpTestCase(TestCase):
             code, msg = CheckHttp().run()
         except SystemExit as e:
             sys.stdout = _stdout
-            self.assertEqual(e.message, NAG_CRITICAL, 'no params should fail with NAG_CRITICAL')
+            self.assertEqual(e.args[0], NAG_CRITICAL, 'no params should fail with NAG_CRITICAL')
             return  # this is strange, sometimes we end up here...
         sys.stdout = _stdout
         self.assertEqual(code, NAG_CRITICAL, 'no param should fail with NAG_CRITICAL')
@@ -76,6 +76,6 @@ class AlternateHttpTestCase(TestCase):
             a = CheckHttp(['-h']).run()
         except SystemExit as e:
             sys.stdout = _stdout
-            self.assertEqual(e.message, 0, 'Help should use exit code 0')
+            self.assertEqual(e.args[0], 0, 'Help should use exit code 0')
         return
 

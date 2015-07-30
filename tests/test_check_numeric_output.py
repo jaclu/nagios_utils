@@ -22,7 +22,7 @@ class PortalRevTestCase(TestCase):
             code, msg = CheckNumericOutput().run()
         except SystemExit as e:
             sys.stdout = _stdout
-            self.assertEqual(e.message, 0, 'no params should use exit code 0')
+            self.assertEqual(e.args[0], 0, 'no params should use exit code 0')
             return  # this is strange, sometimes we end up here...
         sys.stdout = _stdout
         self.assertEqual(code, NAG_CRITICAL, 'no param should fail with NAG_CRITICAL')
@@ -36,7 +36,7 @@ class PortalRevTestCase(TestCase):
             a = CheckNumericOutput(['-h']).run()
         except SystemExit as e:
             sys.stdout = _stdout
-            self.assertEqual(e.message, 0, 'Help should use exit code 0')
+            self.assertEqual(e.args[0], 0, 'Help should use exit code 0')
         return
 
     def test_no_flags(self):
@@ -50,7 +50,7 @@ class PortalRevTestCase(TestCase):
             code, msg = CheckNumericOutput(['echo "2"']).run()
         except SystemExit as e:
             sys.stdout = _stdout
-            self.assertEqual(e.message, 0, 'Help should use exit code 0')
+            self.assertEqual(e.args[0], 0, 'Help should use exit code 0')
         sys.stdout = _stdout
         self.assertEqual(code, NAG_CRITICAL, 'no flags should fail with NAG_CRITICAL')
         self.assertEqual(msg.split(':')[0], lbl, 'response should be labeled %s' % lbl)

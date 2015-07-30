@@ -56,7 +56,7 @@ class TestPortalRevTestCase(PortalRevTestBase):
             a = PortalRev(['-h']).run()
         except SystemExit as e:
             sys.stdout = _stdout
-            self.assertEqual(e.message, 0, 'Help should use exit code 0')
+            self.assertEqual(e.args[0], 0, 'Help should use exit code 0')
         return
 
     def test_host_good(self):
