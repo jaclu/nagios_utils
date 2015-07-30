@@ -2,6 +2,7 @@
 
 from naglib.nagiosplugin import NagiosPlugin
 
+
 class CheckNumericOutput(NagiosPlugin):
     VERSION = '1.0.1'
     HELP = """

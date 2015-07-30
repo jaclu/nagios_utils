@@ -47,7 +47,6 @@ class ThumblrSyncBackLog(NagiosPlugin):
         try:
             output = self.cmd_execute1(cmd)
             if output.find('No such file or directory') > -1:
-                oldest_age = 0
                 count = 0
             else:
                 count = int(output.split('stdout:')[1].split()[0])

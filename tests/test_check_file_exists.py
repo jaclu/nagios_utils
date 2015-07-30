@@ -15,12 +15,11 @@ from check_file_exists import CheckFileExists
 dummy_cmd = '/not/likely/this/exists'
 
 
-
 class FileExists(TestCase):
     def test_help(self):
         try:
             with Capturing() as output:
-                a = CheckFileExists(['-h']).run()
+                CheckFileExists(['-h']).run()
         except SystemExit as e:
             code = e.args[0]
         self.assertEqual(code, 0, 'Help should use exit code 0')

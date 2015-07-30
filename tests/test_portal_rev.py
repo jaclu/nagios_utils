@@ -51,7 +51,7 @@ class TestPortalRev(PortalRevTestBase):
     def test_help(self):
         try:
             with Capturing() as output:
-                a = PortalRev(['-h']).run()
+                PortalRev(['-h']).run()
         except SystemExit as e:
             code = e.args[0]
         self.assertEqual(code, NAG_OK, 'Help should use exit code 0')

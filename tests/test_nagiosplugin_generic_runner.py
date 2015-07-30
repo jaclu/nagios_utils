@@ -16,7 +16,7 @@ class NagiospluginGenericRunner(TestCase):
         b = False
         try:
             with Capturing():  # just filter output
-                a = GenericRunner(['-h'])
+                GenericRunner(['-h'])
         except SystemExit as e:
             if e.args[0] == 0:
                 b = True
@@ -27,7 +27,7 @@ class NagiospluginGenericRunner(TestCase):
         bad_param = '--holka'
         try:
             with Capturing() as output:
-                a = GenericRunner([bad_param])
+                GenericRunner([bad_param])
         except SystemExit as e:
             code = e.args[0]
         self.assertEqual(code, 2, 'Bad param should terminate with SystemExit(2)')
@@ -64,18 +64,18 @@ class NagiospluginGenericRunner(TestCase):
     def test_url_get(self):
         html = GenericRunner().url_get('http://www.google.com')
         b = html.find('<title>Google</title>') > -1
-        self.assertTrue(b,'Google should be in text')
+        self.assertTrue(b, 'Google should be in text')
 
     def test_exit_warn(self):
         code = 'not triggered'
         msg = 'warn msg'
         try:
             with Capturing() as output:
-                s = GenericRunner().exit_warn(msg)
+                GenericRunner().exit_warn(msg)
         except SystemExit as e:
             code = e.args[0]
         self.assertEqual(code, NAG_WARNING, 'exit_warn() should terminate with NAG_WARNING')
-        self.assertEqual(output.stdout_join(),'WARN: %s' % msg, 'Ensuring expected output')
+        self.assertEqual(output.stdout_join(), 'WARN: %s' % msg, 'Ensuring expected output')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
 
     def test_exit_ok(self):
@@ -83,9 +83,9 @@ class NagiospluginGenericRunner(TestCase):
         msg = 'ok msg'
         try:
             with Capturing() as output:
-                s = GenericRunner().exit_ok(msg)
+                GenericRunner().exit_ok(msg)
         except SystemExit as e:
             code = e.args[0]
         self.assertEqual(code, NAG_OK, 'exit_ok() should terminate with NAG_OK')
-        self.assertEqual(output.stdout_join(),'OK: %s' % msg,'Ensuring expected output')
+        self.assertEqual(output.stdout_join(), 'OK: %s' % msg, 'Ensuring expected output')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')

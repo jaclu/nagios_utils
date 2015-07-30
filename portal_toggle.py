@@ -71,7 +71,7 @@ class PortalToggler(NagiosPlugin):
         #
         self.log('will now toggle production to %s' % initially_passive, 1)
         cmd = '~/bin/activate-environ %s' % initially_passive
-        stdout = self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
+        self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
         #
         # Retire the inactive group
         #
@@ -124,7 +124,7 @@ class PortalToggler(NagiosPlugin):
             self.log('    scaling %s to %i instances and restarting' % (app_name, scale), 2)
             self.scale_app(app_name, scale)
             cmd = '%s restart %s' % (self.options.command, app_name)
-            stdout = self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
+            self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
 
         if startup:
             final_status = 'active'
@@ -143,7 +143,7 @@ class PortalToggler(NagiosPlugin):
                             param_args += extra_opt
                         else:
                             param_args = extra_opt
-                    b = CheckCfApp(param_args).run()
+                    CheckCfApp(param_args).run()
                     #  cmd = '%s/check_cf_app.py %s -I %i' % (self.options.plugin_prefix, app_name, scale)
                     # try:
                     #    b = self.cmd_execute_raise_on_error(cmd, self.PROC_TIMEOUT)
@@ -163,7 +163,7 @@ class PortalToggler(NagiosPlugin):
 
     def scale_app(self, app_name, count):
         cmd = '%s scale -i %i %s' % (self.options.command, count, app_name)
-        stdout = self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
+        self.cmd_execute_abort_on_error(cmd, self.PROC_TIMEOUT)
 
     def app_is_running(self, app_name):
         cmd = '%s app %s' % (self.options.command, app_name)

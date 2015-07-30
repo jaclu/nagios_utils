@@ -51,7 +51,6 @@ class TimeUnits(object):
     def get(self):
         lst = []
         remainder = self.value
-        i2 = 0
         c = 'w'
         for c in ('w', 'd', 'h', 'm', 's'):
             if remainder >= self.UNITS[c][0]:

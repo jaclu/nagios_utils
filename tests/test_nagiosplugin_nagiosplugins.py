@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from tests.stdout_redirector import Capturing
-from naglib.nagiosplugin import _perf_value, NagiosPlugin, NAG_MESSAGES, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import _perf_value, NagiosPlugin, NAG_MESSAGES, NAG_OK
 
 
 class NagiosPluginPerfValue(TestCase):
@@ -37,8 +37,9 @@ class TestNagiosPlugin(NagiosPlugin):
 class NagiospluginNagiosPlugin(TestCase):
     def test_nagiosplugin_show_options(self):
         with Capturing() as output:
-            a = TestNagiosPlugin(['-v']).show_options()
-        self.assertEqual(output.stdout(),['Options for program (* indicates default)', '  nsca = * ', '  verbose = 1 '],
+            TestNagiosPlugin(['-v']).show_options()
+        self.assertEqual(output.stdout(),
+                         ['Options for program (* indicates default)', '  nsca = * ', '  verbose = 1 '],
                          'Expected output from show_options() not found')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
 

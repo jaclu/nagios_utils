@@ -8,14 +8,14 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from naglib.nagiosplugin import GenericRunner, SubProcessTask, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import SubProcessTask, NAG_CRITICAL
 
 dummy_cmd = '/not/likely/this/exists'
 
 
 class NagiospluginSubProcess(TestCase):
     def test_cmd_execute_output(self):
-        self.assertEqual(SubProcessTask().cmd_execute_output('true'), (0,'',''), 'true should succeed with no output')
+        self.assertEqual(SubProcessTask().cmd_execute_output('true'), (0, '', ''), 'true should succeed with no output')
         code, stdout, stderr = SubProcessTask().cmd_execute_output(dummy_cmd)
         self.assertEqual(code, 127, 'cmd not found should exit 127')
 
@@ -26,25 +26,25 @@ class NagiospluginSubProcess(TestCase):
                          'expected output not found')
 
     def test_cmd_execute_raise_on_error_no_error(self):
-        self.assertTrue(SubProcessTask().cmd_execute_raise_on_error('true'),'good cmd should exit True')
+        self.assertTrue(SubProcessTask().cmd_execute_raise_on_error('true'), 'good cmd should exit True')
 
     def test_cmd_execute_raise_on_error_is_error(self):
         b = False
         try:
-            a = SubProcessTask().cmd_execute_raise_on_error(dummy_cmd)
-        except Exception as e:
+            SubProcessTask().cmd_execute_raise_on_error(dummy_cmd)
+        except Exception:
             b = True
         self.assertTrue(b, 'bad cmd should fail')
 
     def test_cmd_execute_abort_on_error(self):
-        self.assertEqual(SubProcessTask().cmd_execute_abort_on_error('true'),'','good cmd')
+        self.assertEqual(SubProcessTask().cmd_execute_abort_on_error('true'), '', 'good cmd')
         code = 'not triggered'
         try:
             with Capturing() as output:
-                s = SubProcessTask().cmd_execute_abort_on_error(dummy_cmd)
+                SubProcessTask().cmd_execute_abort_on_error(dummy_cmd)
         except SystemExit as e:
             code = e.args[0]
-        self.assertEqual(code, NAG_CRITICAL,'bad cmd should fail')
+        self.assertEqual(code, NAG_CRITICAL, 'bad cmd should fail')
         self.assertEqual(output.stdout(),
                          ['CRIT: Errormsg: /bin/sh: /not/likely/this/exists: No such file or directory', ''],
                          'Expected output from cmd_execute_abort_on_error() not found')

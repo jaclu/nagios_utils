@@ -48,7 +48,7 @@ class CheckSolr(NagiosPlugin):
         if self.options.verbose > 1:
             print 'url: %s' % url
             if self.options.count:
-                print 'expected item count: %i' % count
+                print 'expected item count: %i' % count  # TODO count isnt defined
 
         t1 = time.time()
         content = self.check_url(url)
@@ -90,11 +90,11 @@ class CheckSolr(NagiosPlugin):
     def check_count(self, content):
         parts = content.split('numFound="')
         if len(parts) < 2:
-            self_exit_crit('numFound not found in output')
+            self.exit_crit('numFound not found in output')
         try:
             actual_count = int(parts[1].split('"')[0])
         except:
-            self_exit_crit('numFound found but no itemcount')
+            self.exit_crit('numFound found but no itemcount')
 
         if self.options.count != actual_count:
             self.exit_crit('Expected %i items, found %i - diff %i' % (self.options.count, actual_count,

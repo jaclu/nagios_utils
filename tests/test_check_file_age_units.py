@@ -36,6 +36,7 @@ class FileAgeUnits(TestCase):
         except SystemExit as e:
             code = e.args[0]
         self.assertEqual(code, NAG_CRITICAL, 'no param should fail with NAG_CRITICAL')
+        # noinspection PyUnboundLocalVariable
         self.assertEqual(output.stdout_join().split(':')[0], 'Usage', 'Help should be displayed')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
 

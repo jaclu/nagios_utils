@@ -134,24 +134,12 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         self.check_one_file(full_name)
 
     def safe_file_find_in_dir(self, wd):
-        fname = ''
-        if 0:  # sys.version >= '2.5':
-            try:
-                if self.options.oldest:
-                    fname = min(os.listdir(wd), key=os.path.getmtime)
-                else:
-                    fname = max(os.listdir(wd), key=os.path.getmtime)
-            except OSError(e):
-                self.exit_crit('OSError: %s' % e)
-            except:
-                self.exit_crit('os.listdir() failed')
+        # older python on some of our servers...
+        files = sorted(os.listdir(wd), key=os.path.getmtime)
+        if self.options.oldest:
+            fname = files[0]
         else:
-            # older python on some of our servers...
-            files = sorted(os.listdir(wd), key=os.path.getmtime)
-            if self.options.oldest:
-                fname = files[0]
-            else:
-                fname = files[-1]
+            fname = files[-1]
         return fname
 
     def ensure_size_is_ok(self, fname):

@@ -34,9 +34,6 @@ class NumericOutput(TestCase):
         self.assertEqual(msg, '%s: bad param' % lbl, 'response should be labeled %s' % lbl)
 
     def test_no_flags(self):
-        lbl = NAG_MESSAGES[NAG_CRITICAL]
-        code = NAG_CRITICAL
-        msg = ''
         with Capturing() as output:
             code, msg = CheckNumericOutput(['echo "2"']).run()
         self.assertEqual(code, NAG_CRITICAL, 'no flags should fail with NAG_CRITICAL')

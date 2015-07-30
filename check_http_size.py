@@ -44,23 +44,10 @@ class CheckHttpSize(NagiosPlugin):
         if self.options.critical:
             c1, c2 = self.verify_size_span(self.options.critical, 'critical')
             size_crit = c2
-            if size_min:
-                size_min = min(size_min, c1)
-            else:
-                size_min = c1
-            if size_max:
-                size_max = max(size_max, c2)
-            else:
-                size_max = c2
-
         doc = self.check_url(url, timeout=self.options.timeout)
         size = len(doc)
 
-        if size_min == 0:
-            size_min = ''  # never use size 0 in perf data
-        if size_max == 0:
-            size_max = ''  # never use size 0 in perf data
-        self.add_perf_data('size', size, warning=size_warn, critical=size_crit)  # , minimum=size_min, maximum=size_max)
+        self.add_perf_data('size', size, warning=size_warn, critical=size_crit)
         if self.options.critical:
             if size < c1 or size > c2:
                 self.exit_crit('%i is out of range' % size)

@@ -9,7 +9,7 @@
 """
 
 
-from naglib.nagiosplugin import NagiosPlugin, NAG_MESSAGES, NAG_CRITICAL
+from naglib.nagiosplugin import NagiosPlugin
 
 
 class PortalRev(NagiosPlugin):
