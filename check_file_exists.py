@@ -34,7 +34,7 @@ Returns critical if file is missing
         self.log('\tshould file exist: %s' % self.options.file_should_exist, 2)
         self.log('\tfailure reported as warning: %s' % self.options.missing_warn, 2)
         file_is_found = os.path.exists(fname)
-        perf_value = '0.0'
+        perf_value = 0.0
         result = failure
         if file_is_found:
             perf_value = time.time() - os.path.getmtime(fname)

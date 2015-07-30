@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from check_portal_rev import PortalRev
 from naglib.nagiosplugin import NAG_OK, NAG_CRITICAL, NAG_MESSAGES
-
+from tests.stdout_redirector import Capturing
 __author__ = 'jaclu'
 
 
@@ -46,18 +46,17 @@ class PortalRevTestBase(TestCase):
             REF_VALUES[key] = value
 
 
-class TestPortalRevTestCase(PortalRevTestBase):
+class TestPortalRev(PortalRevTestBase):
 
     def test_help(self):
-        f = open(os.devnull, 'w')
-        _stdout = sys.stdout
         try:
-            sys.stdout = f
-            a = PortalRev(['-h']).run()
+            with Capturing() as output:
+                a = PortalRev(['-h']).run()
         except SystemExit as e:
-            sys.stdout = _stdout
-            self.assertEqual(e.args[0], 0, 'Help should use exit code 0')
-        return
+            code = e.args[0]
+        self.assertEqual(code, NAG_OK, 'Help should use exit code 0')
+        self.assertEqual(output.stdout_join().split(':')[0], 'Usage', 'Help should be displayed')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
 
     def test_host_good(self):
         lbl = NAG_MESSAGES[NAG_OK]

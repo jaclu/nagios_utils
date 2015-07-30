@@ -7,17 +7,18 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+from tests.stdout_redirector import Capturing
 from naglib.nagiosplugin import NAG_OK, NAG_CRITICAL, NAG_MESSAGES
 
 from alternate_http import CheckHttp
 
 
-class AlternateHttpTestCase(TestCase):
+class AlternateHttp(TestCase):
     def test_bad_host(self):
         lbl = NAG_MESSAGES[NAG_CRITICAL]
         code, msg = CheckHttp(['-u http://not.www.google.com', '-r', 'doesnt matter']).run()
         self.assertEqual(code, NAG_CRITICAL, 'bad host should fail with NAG_CRITICAL')
-        self.assertEqual(msg.split(':')[0], lbl, 'response should be labeled %s' % lbl)
+        self.assertEqual(msg, 'CRIT: Connection error', 'expected output not found')
 
     def test_invalid_response_absent(self):
         lbl = NAG_MESSAGES[NAG_OK]
@@ -45,37 +46,25 @@ class AlternateHttpTestCase(TestCase):
 
     def test_no_response(self):
         lbl = NAG_MESSAGES[NAG_CRITICAL]
-        f = open(os.devnull, 'w')
-        _stdout = sys.stdout
-        sys.stdout = f
-        code, msg = CheckHttp(['-u http://www.google.com']).run()
-        sys.stdout = _stdout
+        with Capturing() as output:
+            code, msg = CheckHttp(['-u http://www.google.com']).run()
         self.assertEqual(code, NAG_CRITICAL, 'no response should fail with NAG_CRITICAL')
         self.assertEqual(msg.split(':')[0], lbl, 'response should be labeled %s' % lbl)
 
     def test_no_param(self):
         lbl = NAG_MESSAGES[NAG_CRITICAL]
-        f = open(os.devnull, 'w')
-        _stdout = sys.stdout
-        try:
-            sys.stdout = f
+        with Capturing() as output:
             code, msg = CheckHttp().run()
-        except SystemExit as e:
-            sys.stdout = _stdout
-            self.assertEqual(e.args[0], NAG_CRITICAL, 'no params should fail with NAG_CRITICAL')
-            return  # this is strange, sometimes we end up here...
-        sys.stdout = _stdout
         self.assertEqual(code, NAG_CRITICAL, 'no param should fail with NAG_CRITICAL')
         self.assertEqual(msg.split(':')[0], lbl, 'response should be labeled %s' % lbl)
 
     def test_help(self):
-        f = open(os.devnull, 'w')
-        _stdout = sys.stdout
         try:
-            sys.stdout = f
-            a = CheckHttp(['-h']).run()
+            with Capturing() as output:
+                a = CheckHttp(['-h']).run()
         except SystemExit as e:
-            sys.stdout = _stdout
-            self.assertEqual(e.args[0], 0, 'Help should use exit code 0')
-        return
+            code = e.args[0]
+        self.assertEqual(code, 0, 'Help should use exit code 0')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+        self.assertEqual(output.stdout_join().split(':')[0], 'Usage', 'stdout looks suspicious')
 

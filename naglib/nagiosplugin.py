@@ -316,10 +316,11 @@ class SubProcessTask(GenericRunner):
 
 
 def _perf_value(value):
-    if isinstance(value, float):
+    if isinstance(value, (float, int)):
         r = '%.2f' % value
     else:
-        r = str(value)
+        #raise SyntaxError('Doesnt seem numeric: [%s]' % value)
+        r = ''
     return r
 
 
@@ -366,7 +367,7 @@ class NagiosPlugin(SubProcessTask):
         super(NagiosPlugin, self).__init__(param_args)
         if not param_args:
             param_args = []
-        self._standalone_mode = False
+        # self._standalone_mode = False  TODO almost certain this should go...
 
     def run(self, standalone=False, ignore_verbose=False):
         self._standalone_mode = standalone

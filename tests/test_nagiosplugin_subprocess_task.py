@@ -1,6 +1,7 @@
 __author__ = 'jaclu'
 
 from unittest import TestCase
+from tests.stdout_redirector import Capturing
 
 # make sure dir above is in search path for pytest
 import os
@@ -11,7 +12,8 @@ from naglib.nagiosplugin import GenericRunner, SubProcessTask, NAG_WARNING, NAG_
 
 dummy_cmd = '/not/likely/this/exists'
 
-class NagiospluginSubProcessTaskTestCase(TestCase):
+
+class NagiospluginSubProcess(TestCase):
     def test_cmd_execute_output(self):
         self.assertEqual(SubProcessTask().cmd_execute_output('true'), (0,'',''), 'true should succeed with no output')
         code, stdout, stderr = SubProcessTask().cmd_execute_output(dummy_cmd)
@@ -19,28 +21,31 @@ class NagiospluginSubProcessTaskTestCase(TestCase):
 
     def test_cmd_execute1(self):
         self.assertEqual(SubProcessTask().cmd_execute1('true'), 0, 'true should exit 0')
-        s = SubProcessTask().cmd_execute1(dummy_cmd)
-        s2 = s.split('\n')[1].split()[0]
-        self.assertEqual(s2,'stderr:', 'cmd not found should display "stderr:"')
+        msg = SubProcessTask().cmd_execute1(dummy_cmd)
+        self.assertEqual(msg, 'retcode: 127\nstderr: /bin/sh: /not/likely/this/exists: No such file or directory\n',
+                         'expected output not found')
 
-    def test_cmd_execute_raise_on_error(self):
+    def test_cmd_execute_raise_on_error_no_error(self):
         self.assertTrue(SubProcessTask().cmd_execute_raise_on_error('true'),'good cmd should exit True')
+
+    def test_cmd_execute_raise_on_error_is_error(self):
         b = False
         try:
             a = SubProcessTask().cmd_execute_raise_on_error(dummy_cmd)
         except Exception as e:
             b = True
-        self.assertTrue(b,'bad cmd should fail')
+        self.assertTrue(b, 'bad cmd should fail')
 
     def test_cmd_execute_abort_on_error(self):
         self.assertEqual(SubProcessTask().cmd_execute_abort_on_error('true'),'','good cmd')
         code = 'not triggered'
-        f = open(os.devnull, 'w')
-        _stdout = sys.stdout
-        sys.stdout = f
         try:
-            s = SubProcessTask().cmd_execute_abort_on_error(dummy_cmd)
+            with Capturing() as output:
+                s = SubProcessTask().cmd_execute_abort_on_error(dummy_cmd)
         except SystemExit as e:
             code = e.args[0]
-        sys.stdout = _stdout
         self.assertEqual(code, NAG_CRITICAL,'bad cmd should fail')
+        self.assertEqual(output.stdout(),
+                         ['CRIT: Errormsg: /bin/sh: /not/likely/this/exists: No such file or directory', ''],
+                         'Expected output from cmd_execute_abort_on_error() not found')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')

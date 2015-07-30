@@ -6,54 +6,42 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from check_numeric_output import CheckNumericOutput
-from naglib.nagiosplugin import NAG_CRITICAL, NAG_WARNING, NAG_MESSAGES
+from naglib.nagiosplugin import NAG_CRITICAL, NAG_WARNING, NAG_MESSAGES, NAG_OK
+from tests.stdout_redirector import Capturing
 
 
 __author__ = 'jaclu'
 
 
-class PortalRevTestCase(TestCase):
+class NumericOutput(TestCase):
+    def test_help(self):
+        try:
+            with Capturing() as output:
+                CheckNumericOutput(['-h']).run()
+        except SystemExit as e:
+            code = e.args[0]
+        self.assertEqual(code, NAG_OK, 'Help should use exit code 0')
+        self.assertEqual(output.stdout_join().split(':')[0], 'Usage', 'Help should be displayed')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+
     def test_no_param(self):
         lbl = NAG_MESSAGES[NAG_CRITICAL]
-        f = open(os.devnull, 'w')
-        _stdout = sys.stdout
-        try:
-            sys.stdout = f
+        with Capturing() as output:
             code, msg = CheckNumericOutput().run()
-        except SystemExit as e:
-            sys.stdout = _stdout
-            self.assertEqual(e.args[0], 0, 'no params should use exit code 0')
-            return  # this is strange, sometimes we end up here...
-        sys.stdout = _stdout
         self.assertEqual(code, NAG_CRITICAL, 'no param should fail with NAG_CRITICAL')
-        self.assertEqual(msg.split(':')[0], lbl, 'response should be labeled %s' % lbl)
-
-    def test_help(self):
-        f = open(os.devnull, 'w')
-        _stdout = sys.stdout
-        try:
-            sys.stdout = f
-            a = CheckNumericOutput(['-h']).run()
-        except SystemExit as e:
-            sys.stdout = _stdout
-            self.assertEqual(e.args[0], 0, 'Help should use exit code 0')
-        return
+        self.assertEqual(output.stdout_join().split(':')[0], 'Usage', 'Help should be displayed')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+        self.assertEqual(msg, '%s: bad param' % lbl, 'response should be labeled %s' % lbl)
 
     def test_no_flags(self):
         lbl = NAG_MESSAGES[NAG_CRITICAL]
-        f = open(os.devnull, 'w')
-        _stdout = sys.stdout
         code = NAG_CRITICAL
         msg = ''
-        try:
-            sys.stdout = f
+        with Capturing() as output:
             code, msg = CheckNumericOutput(['echo "2"']).run()
-        except SystemExit as e:
-            sys.stdout = _stdout
-            self.assertEqual(e.args[0], 0, 'Help should use exit code 0')
-        sys.stdout = _stdout
         self.assertEqual(code, NAG_CRITICAL, 'no flags should fail with NAG_CRITICAL')
-        self.assertEqual(msg.split(':')[0], lbl, 'response should be labeled %s' % lbl)
+        self.assertEqual(output.stdout_join().split(':')[0], 'Usage', 'Help should be displayed')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
 
     def test_low_warning(self):
         lbl = NAG_MESSAGES[NAG_WARNING]
