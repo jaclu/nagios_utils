@@ -9,7 +9,7 @@ import time
 from naglib.nagiosplugin import NagiosPlugin
 
 
-class CheckHttp(NagiosPlugin):
+class CheckAlternateHttp(NagiosPlugin):
     VERSION = '1.3.2'  # added param -n
 
     def custom_options(self, parser):
@@ -20,14 +20,10 @@ class CheckHttp(NagiosPlugin):
 
     def workload(self):
         if not self.options.url:
-            self.exit_help('No url specified')
+            self.exit_crit('No url specified')
         if not self.options.response:
-            self.exit_help('No response specified')
+            self.exit_crit('No response specified')
 
-        if self.options.verbose > 1:
-            self.log('url: %s' % self.options.url)
-            if self.options.response:
-                self.log('expected response: %s' % self.options.response)
         s_expect = self.options.response
         t1 = time.time()
         html = self.url_get(self.options.url)
@@ -46,5 +42,5 @@ class CheckHttp(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    CheckHttp().run(standalone=True)
+    CheckAlternateHttp().run(standalone=True)
 

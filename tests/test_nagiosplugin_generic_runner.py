@@ -8,19 +8,33 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from tests.stdout_redirector import Capturing
-from naglib.nagiosplugin import GenericRunner, NAG_WARNING, NAG_CRITICAL, NAG_OK
+from naglib.nagiosplugin import GenericRunner, NAG_MESSAGES, NAG_OK, NAG_CRITICAL, NAG_WARNING
 
 
-class NagiospluginGenericRunner(TestCase):
-    def test_help(self):
-        b = False
+class TestNagiospluginGenericRunner(TestCase):
+
+    def test_constructor(self):
+        code = None
         try:
-            with Capturing():  # just filter output
-                GenericRunner(['-h'])
+            with Capturing() as output:
+                GenericRunner()
         except SystemExit as e:
-            if e.args[0] == 0:
-                b = True
-        self.assertTrue(b, 'Help should terminate with SystemExit(0)')
+            code = e.args[0]
+        self.assertEqual(code, None, 'Constructor shouldnt fail')
+        self.assertEqual(output.stdout(), [], 'there should be no stdout')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+
+class Foo(object):
+    def test_help(self):
+        lbl = NAG_MESSAGES[NAG_OK]
+        try:
+            with Capturing() as output:
+                code, msg = GenericRunner(['-h']).run()
+        except SystemExit as e:
+            code = e.args[0]
+        self.assertEqual(code, NAG_OK, 'Help should use exit code %i' % lbl)
+        self.assertEqual(output.stdout()[0].split(':'), 'Usage', 'Help should be displayed')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
 
     def test_bad_param(self):
         code = 'not triggered'

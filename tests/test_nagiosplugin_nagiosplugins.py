@@ -9,7 +9,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from tests.stdout_redirector import Capturing
-from naglib.nagiosplugin import _perf_value, NagiosPlugin, NAG_MESSAGES, NAG_OK
+from naglib.nagiosplugin import _perf_value, NagiosPlugin, NAG_MESSAGES, NAG_OK, NAG_CRITICAL
 
 
 class NagiosPluginPerfValue(TestCase):
@@ -25,33 +25,46 @@ class NagiosPluginPerfValue(TestCase):
         self.assertEqual(perf, '', 'String params should return empty')
 
 
-dummy_cmd = '/not/likely/this/exists'
-ok_output = '%s: %s' % (NAG_MESSAGES[NAG_OK], dummy_cmd)
+dummy_result = 'Dummy command succeeded'
+bad_cmd = '/not/likely/this/exists'
+ok_output = '%s: %s' % (NAG_MESSAGES[NAG_OK], bad_cmd)
 
 
-class TestNagiosPlugin(NagiosPlugin):
+class DummytNagiosPlugin(NagiosPlugin):
     def workload(self):
-        return self.exit_ok(dummy_cmd)
+        return self.exit_ok(dummy_result)
 
 
-class NagiospluginNagiosPlugin(TestCase):
+class TestNagiospluginNagiosPlugin(TestCase):
+
+    def test_no_param(self):
+        lbl = NAG_MESSAGES[NAG_OK]
+        msg = None
+        with Capturing() as output:
+            code, msg = DummytNagiosPlugin().run()
+        self.assertEqual(code, NAG_OK, 'no param should exit with %s' % lbl)
+        self.assertEqual(msg, 'OK: Dummy command succeeded', 'Bad no param message')
+        self.assertEqual(output.stdout(), [], 'there should be no stdout')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+
+class Foo(object):
     def test_nagiosplugin_show_options(self):
         with Capturing() as output:
-            TestNagiosPlugin(['-v']).show_options()
+            DummytNagiosPlugin(['-v']).show_options()
         self.assertEqual(output.stdout(),
                          ['Options for program (* indicates default)', '  nsca = * ', '  verbose = 1 '],
                          'Expected output from show_options() not found')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
 
     def test_run_sandalone_false(self):
-        code, msg = TestNagiosPlugin().run()
+        code, msg = DummytNagiosPlugin().run()
         self.assertEqual(code, 0, 'dummy cmd should exit 0')
         self.assertEqual(msg, ok_output, 'output should be dummy cmd')
 
     def test_run_sandalone_true(self):
         try:
             with Capturing() as output:
-                TestNagiosPlugin().run(standalone=True)
+                DummytNagiosPlugin().run(standalone=True)
         except SystemExit as e:
             code = e.args[0]
         self.assertEqual(code, 0, 'dummy cmd should exit 0')
@@ -60,7 +73,7 @@ class NagiospluginNagiosPlugin(TestCase):
 
     def test_run_ignore_verbose(self):
         with Capturing() as output:
-            code, msg = TestNagiosPlugin(['-v', '-v', '-v']).run(ignore_verbose=False)
+            code, msg = DummytNagiosPlugin(['-v', '-v', '-v']).run(ignore_verbose=False)
 
         self.assertEqual(code, 0, 'dummy cmd should exit 0')
         self.assertEqual(msg, ok_output, 'output should be dummy cmd')

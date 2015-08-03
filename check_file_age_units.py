@@ -48,7 +48,7 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         # noinspection PyAttributeOutsideInit
         self.path_arg = self.args.pop()
         if self.options.newest and self.options.oldest:
-            self.exit_help('Cant specify both oldest and newest - maximum one of them!')
+            self.exit_crit('Cant specify both oldest and newest - maximum one of them!')
         elif self.options.newest or self.options.oldest:
             # self.check_sorted_path()
             self.check_directory()
@@ -74,12 +74,12 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
             try:
                 warn = TimeUnits(self.options.age_warn)
             except:
-                self.exit_help('invalid syntax for option -w: %s' % self.options.age_warn)
+                self.exit_crit('invalid syntax for option -w: %s' % self.options.age_warn)
         crit = TimeUnits()
         try:
             crit = TimeUnits(self.options.age_crit)
         except:
-            self.exit_help('invalid syntax for option -c: %s' % self.options.age_crit)
+            self.exit_crit('invalid syntax for option -c: %s' % self.options.age_crit)
 
         if size_check and ((warn.value == 0) and (crit.value == 0)):
             self.exit_ok('file size good')
@@ -124,7 +124,7 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         elif os.path.isdir(f):
             wd = f
         else:
-            self.exit_help('If -o or -n is used argument needs to be a directory')
+            self.exit_crit('If -o or -n is used argument needs to be a directory')
 
         self.log('Will examine the following dir: %s' % wd, 3)
         os.chdir(wd)

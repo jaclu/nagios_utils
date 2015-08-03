@@ -5,7 +5,13 @@ If you cant install the nagios check_http you can use this instead...
 """
 
 import time
-import urllib2
+try:
+    from urllib2 import urlopen, HTTPError
+except:
+    # python3
+    from urllib.request import urlopen
+    from urllib.error import HTTPError
+
 
 from naglib.nagiosplugin import NagiosPlugin
 
@@ -30,10 +36,10 @@ class CheckHttpSize(NagiosPlugin):
         size_min = size_max = 0
         size_warn = size_crit = ''
         if len(self.args) < 1:
-            self.exit_help('Mandatory param missing')
+            self.exit_crit('Mandatory param missing')
         url = self.args[0]
         if not (self.options.warning or self.options.critical):
-            self.exit_help('-w or -c must be given')
+            self.exit_crit('-w or -c must be given')
 
         if self.options.warning:
             w1, w2 = self.verify_size_span(self.options.warning, 'warning')
@@ -60,8 +66,8 @@ class CheckHttpSize(NagiosPlugin):
     def check_url(self, url, s_expect='', timeout=10):
         t1 = time.time()
         try:
-            f = urllib2.urlopen(url, timeout=timeout)
-        except urllib2.HTTPError, e:
+            f = urlopen(url, timeout=timeout)
+        except HTTPError as e:
             self.exit_crit('HTTP error:%i - %s' % (e.code, e.msg))
         except:
             if time.time() > t1 + timeout:

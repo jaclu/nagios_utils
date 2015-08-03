@@ -12,10 +12,11 @@
 from naglib.nagiosplugin import NagiosPlugin
 
 
-class PortalRev(NagiosPlugin):
+class CheckPortalRev(NagiosPlugin):
     VERSION = '1.1.0'
     DESCRIPTION = "Displays portal version"
     CMD_LINE_HINT = 'host'
+    ARGC = 1
 
     def custom_options(self, parser):
         parser.add_option("-r", "--revision", dest="revision")
@@ -25,7 +26,7 @@ class PortalRev(NagiosPlugin):
 
     def workload(self):
         if len(self.args) != 1:
-            self.exit_help('Exactly one param expected! [%s]' % ' '.join(self.args))
+            self.exit_crit('Exactly one param expected! [%s]' % ' '.join(self.args))
 
         html = self.url_get(self.args[0], self.options.url)
         parts = html.split()
@@ -53,4 +54,4 @@ class PortalRev(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    PortalRev().run(standalone=True)
+    CheckPortalRev().run(standalone=True)

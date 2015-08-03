@@ -24,12 +24,12 @@ span (number is parsed as a float).
 
     def workload(self):
         if len(self.args) != 1:
-            self.exit_help("You must specify a command to run (enclose with '' or \"\" if spaces are used)")
+            self.exit_crit("You must specify a command to run (enclose with '' or \"\" if spaces are used)")
         self.params_are_sane()
         cmd = self.args[0]
         self.log('Command to run: %s' % cmd, 1)
         if not (self.options.min_crit or self.options.max_crit or self.options.min_warn or self.options.max_warn):
-            self.exit_help("You must specify at least one of -w -c -W -C")
+            self.exit_crit("You must specify at least one of -w -c -W -C")
         if self.options.min_crit and self.options.max_crit:
             if self.options.min_crit == self.options.max_crit:
                 self.exit_crit("min_crit = max_crit")

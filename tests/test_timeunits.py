@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from naglib.timeunits import TimeUnits
 
 
-class TimeunitsTestCase(TestCase):
+class TestTimeunits(TestCase):
     def test_eq_60s(self):
         self.assertEqual(TimeUnits(60), TimeUnits('60s'), '60 should be equal to 60s')
 

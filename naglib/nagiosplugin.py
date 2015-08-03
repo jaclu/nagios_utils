@@ -44,18 +44,12 @@ class GenericRunner(object):
     ARGC = '*'  # * = 0 or larger, n = exact match, 2+ two or more, 1-3 one to three
 
     def __init__(self, param_args=None):
-        if not param_args:
-            param_args = []
         self.log_lvl = 1  # initial value used during option_handler
-        self._standalone_mode = True
+        self._standalone_mode = True  # might be changed in run()
         self._result = None
-        self.options = None
-        self.args = []
-        self.parser = None
         self._perf_data = []
         self.option_handler(param_args)
         self.log_lvl = int(self.options.verbose)
-
 
     def custom_options(self, parser):
         """Override for adding local options.
@@ -75,11 +69,6 @@ class GenericRunner(object):
         self.exit_crit('Plugin implementation must define a workload()!')
 
     def option_handler(self, param_args=None):
-        if not param_args:
-            param_args = []
-        curframe = inspect.currentframe()
-        calframe = inspect.getouterframes(curframe, 2)
-        prog_name = calframe[2][1]
         if self.CMD_LINE_HINT:
             usage = '%prog [options] ' + self.CMD_LINE_HINT
         else:
@@ -98,22 +87,22 @@ class GenericRunner(object):
                                     'nsca will find destination where to send the data in its own config file)')
 
         self.custom_options(self.parser)
+        if not param_args:
+            # if we have param_args this is irrelevant
+            if sys.argv[0].find('py.test') > -1:
+                sys.argv = [inspect.stack()[4][1]] # during pytest insert progname here
+            elif sys.argv[0].find('utrunner.py') > -1:
+                sys.argv = [inspect.stack()[4][1]] # during pytest insert progname here
         try:
             self.options, self.args = self.parser.parse_args(param_args)
         except SystemExit as exit_code:
             if self.HELP:
                 self.log(self.HELP)
             raise #SystemExit(0) # exiting program after displaying help
-        self.verify_argcount()
 
-    def exit_help(self, msg=None):
+    def NOT_exit_help(self, msg=None):
         """Convenient exit call, on param check failure"""
-        sys.argv.append('-h')
-        try:
-            self.parser.parse_args()  # trigger a help printout
-        except:
-            pass
-
+        self.parser.print_help()  # trigger a help printout
         self.log('', 0)
 
         if self.options.verbose > 0:
@@ -125,51 +114,6 @@ class GenericRunner(object):
         if msg:
             self.log('*** %s' % msg, 0)
         self.exit_crit('bad param')
-
-    def verify_argcount(self):
-        argc = len(self.args)
-
-        if self.ARGC == '*':
-            return  # anything goes
-
-        #
-        # Exact count
-        #
-        try:
-            i = int(self.ARGC)
-        except:
-            i = -99
-        if not (i == -99):
-            # was single digit
-            if not (argc == i):
-                self.exit_help('This command must have exactly %i arguments' % i)
-            return
-
-        #
-        # x+   x or more
-        #
-        if self.ARGC[-1] == '+':
-            try:
-                i = int(self.ARGC[:-1])
-            except:
-                i = -99
-            if i == -99:
-                self.exit_help('plugin bugg ARGC = "%s" is not accepted syntax' % self.ARGC)
-            if argc < i:
-                self.exit_help('to few arguments, at least %i required' % i)
-            return
-
-        #
-        # x-y
-        #
-        l = self.ARGC.split('-')
-        if len(l) > 1:
-            imin = l[0]
-            imax = l[1]
-            if (argc < imin) or (argc > imax):
-                self.exit_help('argument count outside accepted span (%s)' % self.ARGC)
-            return
-        return
 
     def url_get(self, host, url='/'):
         if host.find('http') < 0:
@@ -196,18 +140,12 @@ class GenericRunner(object):
         return
 
     def exit_ok(self, msg):
-        if msg.find('OK:') > -1:
-            print('>>>>>>> exit_ok msg contains : - %s' % msg)
         self._exit(NAG_OK, '%s: %s' % (NAG_MESSAGES[NAG_OK], msg))
 
     def exit_warn(self, msg):
-        if msg.find('WARN:') > -1:
-            print('>>>>>>> exit_warn msg contains : - %s' % msg)
         self._exit(NAG_WARNING, '%s: %s' % (NAG_MESSAGES[NAG_WARNING], msg))
 
     def exit_crit(self, msg):
-        if msg.find('CRIT:') > -1:
-            print('>>>>>>> exit_crit msg contains : - %s' % msg)
         self._exit(NAG_CRITICAL, '%s: %s' % (NAG_MESSAGES[NAG_CRITICAL], msg))
 
     def _exit(self, code, msg):
@@ -362,11 +300,10 @@ class NagiosPlugin(SubProcessTask):
     BASE_VERSION = '1.6.1'  # added nsca global option
     VERSION = BASE_VERSION
     MSG_LABEL = ''  # optional prefix for the message line
+    NO_PARAMS_ERROR = '' # set this if no params triggers error
 
     def __init__(self, param_args=None):
         super(NagiosPlugin, self).__init__(param_args)
-        if not param_args:
-            param_args = []
         # self._standalone_mode = False  TODO almost certain this should go...
 
     def run(self, standalone=False, ignore_verbose=False):
@@ -375,6 +312,7 @@ class NagiosPlugin(SubProcessTask):
             self.log_lvl = 0
         try:
             self.show_options()
+            self.verify_argcount()
             self.workload()
             self.exit_crit('Plugin implementation failed to terminate properly!')
         except SystemExit:
@@ -413,6 +351,51 @@ class NagiosPlugin(SubProcessTask):
             extra_data.pop(-1)
         self._perf_data.append((name, _perf_value(value)) + tuple(extra_data))
 
+
+    def verify_argcount(self):
+        argc = len(self.args)
+
+        if self.ARGC == '*':
+            return  # anything goes
+
+        #
+        # Exact count
+        #
+        try:
+            i = int(self.ARGC)
+        except:
+            i = -99
+        if not (i == -99):
+            # was single digit
+            if not (argc == i):
+                self.exit_crit('This command must have exactly %i arguments' % i)
+            return
+
+        #
+        # x+   x or more
+        #
+        if self.ARGC[-1] == '+':
+            try:
+                i = int(self.ARGC[:-1])
+            except:
+                i = -99
+            if i == -99:
+                self.exit_help('plugin bugg ARGC = "%s" is not accepted syntax' % self.ARGC)
+            if argc < i:
+                self.exit_help('to few arguments, at least %i required' % i)
+            return
+
+        #
+        # x-y
+        #
+        l = self.ARGC.split('-')
+        if len(l) > 1:
+            imin = l[0]
+            imax = l[1]
+            if (argc < imin) or (argc > imax):
+                self.exit_help('argument count outside accepted span (%s)' % self.ARGC)
+            return
+        return
 
 
 

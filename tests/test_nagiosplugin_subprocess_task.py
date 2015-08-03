@@ -13,7 +13,7 @@ from naglib.nagiosplugin import SubProcessTask, NAG_CRITICAL
 dummy_cmd = '/not/likely/this/exists'
 
 
-class NagiospluginSubProcess(TestCase):
+class TestNagiospluginSubProcess(TestCase):
     def test_cmd_execute_output(self):
         self.assertEqual(SubProcessTask().cmd_execute_output('true'), (0, '', ''), 'true should succeed with no output')
         code, stdout, stderr = SubProcessTask().cmd_execute_output(dummy_cmd)

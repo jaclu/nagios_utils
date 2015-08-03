@@ -21,7 +21,7 @@ Returns critical if file is missing
 
     def workload(self):
         if len(self.args) != 1:
-            self.exit_crit('exactly one filename must be supplied as param')
+            self.exit_crit('Exactly one filename must be supplied as param')
 
         fname = self.args.pop()
 

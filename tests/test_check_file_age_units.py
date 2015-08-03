@@ -15,46 +15,44 @@ good_file = '/etc/hosts'
 bad_file = '/should/not/exist'
 
 
-class FileAgeUnits(TestCase):
-    def test_help(self):
-        code = 1
-        try:
-            with Capturing() as output:
-                CheckFileAgeUnits(['-h']).run()
-        except SystemExit as e:
-            code = e.args[0]
-        self.assertEqual(code, NAG_OK, 'Help should use exit code 0')
-        # noinspection PyUnboundLocalVariable
-        self.assertEqual(output.stdout_join().split(':')[0], 'Usage', 'Help should be displayed')
-        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+class TestFileAgeUnits(TestCase):
 
     def test_no_param(self):
-        code = 1
+        lbl = NAG_MESSAGES[NAG_CRITICAL]
+        msg = None
+        with Capturing() as output:
+            code, msg = CheckFileAgeUnits().run()
+        self.assertEqual(code, NAG_CRITICAL, 'no param should fail with %s' % lbl)
+        self.assertEqual(msg, 'CRIT: This command must have exactly 1 arguments', 'Bad no param message')
+        self.assertEqual(output.stdout(), [], 'there should be no stdout')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+
+    def test_help(self):
+        lbl = NAG_MESSAGES[NAG_OK]
         try:
             with Capturing() as output:
-                CheckFileAgeUnits().run()
+                code, msg = CheckFileAgeUnits(['-h']).run()
         except SystemExit as e:
             code = e.args[0]
-        self.assertEqual(code, NAG_CRITICAL, 'no param should fail with NAG_CRITICAL')
-        # noinspection PyUnboundLocalVariable
-        self.assertEqual(output.stdout_join().split(':')[0], 'Usage', 'Help should be displayed')
+        self.assertEqual(code, NAG_OK, 'Help should use exit code %s' % lbl)
+        self.assertEqual(output.stdout_str().split(':')[0], 'Usage', 'Help should be displayed')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
 
     def test_not_existing_file(self):
         with Capturing() as output:
             code, msg = CheckFileAgeUnits([bad_file, '-w 1s', '-c 10s']).run()
-        self.assertEqual(code, NAG_CRITICAL, '%s should not exist' % bad_file)
+        self.assertEqual(code, NAG_CRITICAL)
+        self.assertEqual(msg, '%s: File not found: %s' % (NAG_MESSAGES[NAG_CRITICAL], bad_file))
         self.assertEqual(output.stdout(), [], 'there should be no stdout')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
-        self.assertEqual(msg, '%s: File not found: %s' % (NAG_MESSAGES[NAG_CRITICAL], bad_file))
 
     def test_not_existing_file_warn(self):
         with Capturing() as output:
             code, msg = CheckFileAgeUnits([bad_file, '--warn-on-missing', '-w 1s', '-c 10s']).run()
-        self.assertEqual(code, NAG_WARNING, '%s should not exist' % bad_file)
+        self.assertEqual(code, NAG_WARNING)
+        self.assertEqual(msg, '%s: File not found: %s' % (NAG_MESSAGES[NAG_WARNING], bad_file))
         self.assertEqual(output.stdout(), [], 'there should be no stdout')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
-        self.assertEqual(msg, '%s: File not found: %s' % (NAG_MESSAGES[NAG_WARNING], bad_file))
 
     def test_existing_file_high_crit(self):
         with Capturing() as output:
@@ -139,6 +137,13 @@ class FileAgeUnits(TestCase):
         with Capturing() as output:
             code, msg = CheckFileAgeUnits(['/etc', '--newest', '-c 10000w']).run()
         self.assertEqual(code, NAG_OK, "youngest file shouldn't be 200 years")
+        self.assertEqual(output.stdout(), [], 'there should be no stdout')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+
+    def test_in_dir_youngest_and_oldest(self):
+        with Capturing() as output:
+            code, msg = CheckFileAgeUnits(['/etc',  '--newest', '--oldest', '-c 10000w']).run()
+        self.assertEqual(code, NAG_CRITICAL, "--newest abd --oldest can't be combined")
         self.assertEqual(output.stdout(), [], 'there should be no stdout')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
 
