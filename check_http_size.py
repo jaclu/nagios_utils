@@ -42,16 +42,15 @@ class CheckHttpSize(NagiosPlugin):
             self.exit_crit('-w or -c must be given')
 
         if self.options.warning:
-            w1, w2 = self.verify_size_span(self.options.warning, 'warning')
+            w1, w2 = self.parse_size_span(self.options.warning, 'warning')
             size_min = w1
             size_max = w2
             size_warn = w2
 
         if self.options.critical:
-            c1, c2 = self.verify_size_span(self.options.critical, 'critical')
+            c1, c2 = self.parse_size_span(self.options.critical, 'critical')
             size_crit = c2
-        doc = self.check_url(url, timeout=self.options.timeout)
-        size = len(doc)
+        size = self.doc_size(url, timeout=self.options.timeout)
 
         self.add_perf_data('size', size, warning=size_warn, critical=size_crit)
         if self.options.critical:
@@ -63,7 +62,7 @@ class CheckHttpSize(NagiosPlugin):
 
         self.exit_ok('Acceptable doc size: %i' % size)
 
-    def check_url(self, url, s_expect='', timeout=10):
+    def doc_size(self, url, s_expect='', timeout=10):
         t1 = time.time()
         try:
             f = urlopen(url, timeout=timeout)
@@ -78,30 +77,37 @@ class CheckHttpSize(NagiosPlugin):
         content = f.read()
         if s_expect and (content.find(s_expect) < 0):
             self.exit_crit('%s not found' % s_expect)
-        return content
+        return len(content)
 
-    def verify_size_span(self, param, label):
+    def parse_size_span(self, param, label):
         try:
             parts = param.split(':')
         except:
-            self.exit_help('bad syntax for %s - %s' % (label, param))
+            self.exit_crit('bad syntax for %s - %s' % (label, param))
         if len(parts) == 1:
             m1 = m2 = parts[0]
         elif not len(parts) == 2:
-            self.exit_help('there should be 1 or 2 numbers given for %s - %s' % (label, param))
+            self.exit_crit('there should be 1 or 2 numbers given for %s - %s' % (label, param))
         else:
-            m1 = parts[0]
-            m2 = parts[1]
-        try:
-            m1 = int(m1)
-        except:
-            self.exit_help('value (%s) is not a number, %s - %s' % (m1, label, param))
-        try:
-            m2 = int(m2)
-        except:
-            self.exit_help('value (%s) is not a number, %s - %s' % (m2, label, param))
-        if m1 > m2:
-            self.exit_help('second number must be larger than first, %s - %s' % (label, param))
+            m1 = parts[0].strip()
+            m2 = parts[1].strip()
+        if m1 == '':
+            m1 = -1
+        else:
+            try:
+                m1 = int(m1)
+            except:
+                self.exit_crit('value (%s) is not a number, %s - %s' % (m1, label, param))
+        if m2 == '':
+            m2 = 99999999
+        else:
+            try:
+                m2 = int(m2)
+            except:
+                self.exit_crit('value (%s) is not a number, %s - %s' % (m2, label, param))
+        if not m2 == -1:
+            if m1 > m2:
+                self.exit_crit('second number must be larger than first, %s - %s' % (label, param))
 
         return m1, m2
 

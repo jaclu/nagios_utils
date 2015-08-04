@@ -100,27 +100,12 @@ class GenericRunner(object):
                 self.log(self.HELP)
             raise #SystemExit(0) # exiting program after displaying help
 
-    def NOT_exit_help(self, msg=None):
-        """Convenient exit call, on param check failure"""
-        self.parser.print_help()  # trigger a help printout
-        self.log('', 0)
-
-        if self.options.verbose > 0:
-            self.log('Defaults:')
-            params = self.parser.defaults.keys()
-            params.sort()
-            for s in params:
-                self.log('\t %s  %s' % (s, self.parser.defaults[s]))
-        if msg:
-            self.log('*** %s' % msg, 0)
-        self.exit_crit('bad param')
-
     def url_get(self, host, url='/'):
         if host.find('http') < 0:
             host = 'http://' + host
         try:
             u = ('%s%s' % (host, url)).strip()
-            page = requests.get(u)
+            page = requests.get(u,timeout=10)
         except requests.exceptions.ConnectionError as e:
             self.exit_crit('Connection error')
         except requests.exceptions.Timeout as e:
@@ -350,7 +335,6 @@ class NagiosPlugin(SubProcessTask):
         while extra_data and extra_data[-1] == '':
             extra_data.pop(-1)
         self._perf_data.append((name, _perf_value(value)) + tuple(extra_data))
-
 
     def verify_argcount(self):
         argc = len(self.args)

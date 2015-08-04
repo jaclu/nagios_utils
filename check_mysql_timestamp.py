@@ -6,6 +6,7 @@ from naglib.nagiosplugin import NagiosPlugin
 from naglib.timeunits import TimeUnits
 
 
+# TODO write unittests
 class CheckMysqlTimeStampAge(NagiosPlugin):
     VERSION = '0.1.1'
     HELP = """

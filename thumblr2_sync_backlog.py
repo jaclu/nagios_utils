@@ -11,7 +11,7 @@ import stat
 def file_age_in_seconds(pathname):
     return time.time() - os.stat(pathname)[stat.ST_MTIME]
 
-
+# TODO write unittests
 class ThumblrSyncBackLog(NagiosPlugin):
     VERSION = '1.1.3'  # 2015-03-25 jaclu added perfdata
     DESCRIPTION = "Warns if back-log of thumblr2 files is to large, or oldest file waiting is to old"

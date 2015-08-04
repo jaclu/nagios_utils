@@ -5,6 +5,7 @@ from naglib.nagiosplugin import NagiosPlugin
 import tempfile
 
 
+# TODO write unittests
 class CheckMongoDb(NagiosPlugin):
     VERSION = '1.2.1'
     DESCRIPTION = "Warns if back-log of thumblr2 files is to large, or oldest file waiting is to old"

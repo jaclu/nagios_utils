@@ -12,6 +12,7 @@ except:
 from naglib.nagiosplugin import NagiosPlugin
 
 
+# TODO write unittests
 class CheckSolr(NagiosPlugin):
     VERSION = '1.1.2'
     DEFAULT_REL_URL = '/solr/search/select?q=*:*&rows=0'

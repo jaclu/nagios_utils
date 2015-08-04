@@ -28,8 +28,8 @@ def extract_cloud_foundry_error_details(s):
         r = parts[1]
     return r.strip()
 
-
-class Any9Api(NagiosPlugin):
+# TODO complete unittests
+class CheckAny9Api(NagiosPlugin):
     VERSION = '1.0.0'
     CMD_LINE_HINT = 'if you need to use - for options to the cf command encapsulate like "push -f manifest.yml"'
 
@@ -77,4 +77,4 @@ class Any9Api(NagiosPlugin):
 
 
 if __name__ == "__main__":
-    Any9Api().run(standalone=True)
+    CheckAny9Api().run(standalone=True)

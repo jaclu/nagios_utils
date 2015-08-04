@@ -18,7 +18,7 @@ def cmd_strip_password(cmd):
     r = 'PGPASSWORD=xxxxxxx ' + ' '.join(parts[1:])
     return r
 
-
+# TODO write unittests
 class CheckPostgres(NagiosPlugin):
     VERSION = '0.3.6'
     HELP = """

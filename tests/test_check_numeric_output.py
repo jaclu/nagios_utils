@@ -123,3 +123,55 @@ class TestNumericOutput(TestCase):
         self.assertEqual(msg.split(':')[0], lbl, 'response should be labeled %s' % lbl)
         self.assertEqual(output.stdout(), [], 'there should be no stdout')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
+
+    def test_m_num_repr_int_0(self):
+        self.check_ok_value(0, str(0))
+
+    def test_m_num_repr_int_2(self):
+        self.check_ok_value(2, str(2))
+
+    def test_m_num_repr_int_minus_2(self):
+        self.check_ok_value(-2, str(-2))
+
+    def test_m_num_repr_float_0(self):
+        self.check_ok_value(0.0, '0.000000')
+
+    def test_m_num_repr_float_2(self):
+        self.check_ok_value(2.0, '2.000000')
+
+    def test_m_num_repr_float_minus_2(self):
+        self.check_ok_value(-2.0, '-2.000000')
+
+    def test_m_num_repr_none(self):
+        cno = CheckNumericOutput(['echo "3"', '-W 12', '-C 10'])
+        try:
+            with Capturing() as output:
+                result = cno.num_repr(None)
+        except TypeError as e:
+            code = e.args[0]
+        self.assertEqual(code, 'float argument required, not NoneType')
+        self.assertEqual(output.stdout(), [], 'there should be no stdout')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+
+    def test_m_num_repr_str(self):
+        cno = CheckNumericOutput(['echo "3"', '-W 12', '-C 10'])
+        try:
+            with Capturing() as output:
+                result = cno.num_repr('2')
+        except TypeError as e:
+            code = e.args[0]
+        self.assertEqual(code, 'float argument required, not str')
+        self.assertEqual(output.stdout(), [], 'there should be no stdout')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+
+    # Extra stuff
+    def check_ok_value(self, param, value):
+        with Capturing() as output:
+            cno = CheckNumericOutput(['echo "3"', '-W 12', '-C 10'])
+        result = cno.num_repr(param)
+        self.assertEqual(result, value)
+        self.assertEqual(output.stdout(), [], 'there should be no stdout')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr')
+
+
+

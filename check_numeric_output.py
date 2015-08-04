@@ -65,7 +65,7 @@ span (number is parsed as a float).
         self.exit_ok('Output %s' % s_result)
 
     def num_repr(self, value):
-        if self.is_int:
+        if isinstance(value, int):
             r = '%i' % value
         else:
             r = '%f' % value

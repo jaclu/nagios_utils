@@ -12,6 +12,8 @@ import os
 import sys
 from subprocess import Popen, PIPE
 
+# TODO write unittests
+
 nag_check_cmd = '/usr/lib/nagios/plugins/check_apt'
 
 

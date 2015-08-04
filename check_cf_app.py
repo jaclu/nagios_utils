@@ -20,6 +20,7 @@ def line_cleanup(org_line):
     return line.strip()
 
 
+# TODO write unittests
 class CheckCfApp(NagiosPlugin):
     VERSION = '1.4.1'  # added ping timeout stats update
     HELP = """

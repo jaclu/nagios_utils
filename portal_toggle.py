@@ -19,6 +19,7 @@ TASK_TOGGLE = 'toggle'
 VERBS = (TASK_LIST, TASK_TOGGLE)
 
 
+# TODO write unittests
 class PortalToggler(NagiosPlugin):
     VERSION = '2.2.0'  # added -n toggle
     DESCRIPTION = "lists/toggles production portal"
