@@ -13,6 +13,7 @@ from naglib.timeunits import TimeUnits
 
 
 class TestTimeunits(TestCase):
+
     def test_eq_60s(self):
         self.assertEqual(TimeUnits(60), TimeUnits('60s'), '60 should be equal to 60s')
 
@@ -66,6 +67,18 @@ class TestTimeunits(TestCase):
         dt2 = TimeUnits(date_time=dt)
         self.assertLess(dt1, dt2, 'Datetimes should be one sec apart')
 
+    def test_rounded_down_minute(self):
+        self.assertEqual(TimeUnits(119).get_rounded_down(), TimeUnits('1m').get())
+
+    def test_rounded_down_hour(self):
+        self.assertEqual(TimeUnits(3600 * 2 - 1).get_rounded_down(), TimeUnits('1h').get())
+
+    def test_rounded_down_day(self):
+        self.assertEqual(TimeUnits(3600 * 48 - 1).get_rounded_down(), TimeUnits('1d').get())
+
+    def test_rounded_down_week(self):
+        self.assertEqual(TimeUnits(3600 * 24 * 14 - 1).get_rounded_down(), TimeUnits('1w').get())
+
     def test_bad_unit(self):
         try:
             TimeUnits('1q')
@@ -88,4 +101,12 @@ class TestTimeunits(TestCase):
     def test_multiple_units(self):
         with self.assertRaises(ValueError):
             TimeUnits('1sw')
+
+    def test_date_time_param(self):
+        t = datetime(1981, 5, 12)
+        TimeUnits(date_time=t)
+
+    def test_date_time_param_bad(self):
+        with self.assertRaises(TypeError):
+            TimeUnits(date_time=42)
 

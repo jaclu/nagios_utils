@@ -112,8 +112,6 @@ class GenericRunner(object):
             self.exit_warn('Timeout')
         except:
             self.exit_crit('Unknown request error')
-            # TODO: this should not be here...
-            self.exit_crit('Failed to retrieve revision data')
         if not page.status_code == 200:
             self.exit_crit('HTML response not 200')
         html = page.text
@@ -289,7 +287,6 @@ class NagiosPlugin(SubProcessTask):
 
     def __init__(self, param_args=None):
         super(NagiosPlugin, self).__init__(param_args)
-        # self._standalone_mode = False  TODO almost certain this should go...
 
     def run(self, standalone=False, ignore_verbose=False):
         self._standalone_mode = standalone

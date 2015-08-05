@@ -20,7 +20,10 @@ class TimeUnits(object):
         if sparam:
             self.value = self._parse_sparam(sparam)
         elif date_time:
-            dt = datetime.datetime.now() - date_time  # TODO ensure types match
+            if not isinstance(date_time, datetime.datetime):
+                raise TypeError('date_time should be of type datetime.datetime')
+            t1 = datetime.datetime.now()
+            dt = t1 - date_time
             self.value = dt.days * (24 * 60 * 60) + dt.seconds
         else:
             self.value = 0
@@ -42,10 +45,8 @@ class TimeUnits(object):
             raise SystemError('get_plural_label() bad param')
         return self.UNITS[unit][1]
 
-    def get_rounded(self):
+    def get_rounded_down(self):
         """Display value in pref notation."""
-        #  i = self.get_by_unit_key(self.pref_unit)  # TODO seems not to be used...
-        #  s = self.UNITS[self.pref_unit][1]  # TODO seems not to be used...
         return '%i %s' % (self.get_by_unit_key(self.pref_unit), self.UNITS[self.pref_unit][1])
 
     def get(self):
@@ -64,6 +65,7 @@ class TimeUnits(object):
 
     def _calculate_pref_unit(self):
         i2 = self.value
+        unit = self.UNIT_WEEK
         unit_value = self.UNIT_SECOND
         for u in (self.UNIT_WEEK, self.UNIT_DAY, self.UNIT_HOUR, self.UNIT_MINUTE,):
             if i2 >= u:
@@ -74,7 +76,7 @@ class TimeUnits(object):
             if self.UNITS[k][0] == unit_value:
                 unit = k
                 break
-        return unit  # TODO ensure unit is always set
+        return unit
 
     def _parse_sparam(self, param):
         try:
