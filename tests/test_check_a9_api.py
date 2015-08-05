@@ -13,6 +13,7 @@ from naglib.nagiosplugin import NAG_MESSAGES, NAG_OK, NAG_CRITICAL
 
 from check_a9_api import CheckAny9Api
 
+# TODO more tests needed
 class TestCheckAny9Api(TestCase):
     def test_no_param(self):
         with Capturing() as output:

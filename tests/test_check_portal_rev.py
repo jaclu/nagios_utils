@@ -22,16 +22,8 @@ K_VERS = 'vers'
 class TestCheckPortalRev(TestCase):
     def __init__(self, *args, **argv):
         super(TestCheckPortalRev, self).__init__(*args, **argv)
-        if 1:
-            # normal, get values from server
-            self._defaults = None
-            self._ref_values = None
-        else:
-            # for slow internet, save the extra initial call, the values need to be updated to current ones after deploy
-            self._defaults = {'vers': None, 'verbose': 0, 'url': '/portal/build.txt',
-                              'build_time': None, 'nsca': '', 'revision': None}
-            self._ref_values = {K_HOST: 'www.europeana.eu', K_REV: u'ee79e43a97', K_VERS: u'2.1.0',
-                                K_BRANCH: u'UNKNOWN',K_BUILD: u'2015-07-21_17:04:37'}
+        self._defaults = None
+        self._ref_values = None
 
     def setUp(self):
         if not self._ref_values:
@@ -146,7 +138,7 @@ class TestCheckPortalRev(TestCase):
 
     def test_url_good(self):
         with Capturing() as output:
-            code, msg = CheckPortalRev([self._ref_values[K_HOST], '-u', self._defaults['url']]).run()
+            code, msg = CheckPortalRev([self._ref_values[K_HOST], '-u', self._defaults.url]).run()
         self.assertEqual(code, NAG_OK, 'correct url should not fail')
         self.assertEqual(msg.split(':')[0], 'OK', 'correct url should be labeled OK')
         self.assertEqual(output.stdout(), [], 'there should be no stdout')
