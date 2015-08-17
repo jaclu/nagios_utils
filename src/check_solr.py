@@ -9,7 +9,7 @@ try:
 except:
     from urlparse import urlparse
 
-from src.naglib import NagiosPlugin
+from naglib/nagiosplugin import NagiosPlugin
 
 
 # TODO write unittests
