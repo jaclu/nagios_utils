@@ -144,23 +144,25 @@ class TestNumericOutput(TestCase):
 
     def test_m_num_repr_none(self):
         cno = CheckNumericOutput(['echo "3"', '-W 12', '-C 10'])
+        b = False
         try:
             with Capturing() as output:
                 result = cno.num_repr(None)
         except TypeError as e:
-            code = e.args[0]
-        self.assertEqual(code, 'float argument required, not NoneType')
+            b = True
+        self.assertTrue(b, 'None argument should rise TypeError')
         self.assertEqual(output.stdout(), [], 'there should be no stdout')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
 
     def test_m_num_repr_str(self):
         cno = CheckNumericOutput(['echo "3"', '-W 12', '-C 10'])
+        b = False
         try:
             with Capturing() as output:
                 result = cno.num_repr('2')
         except TypeError as e:
-            code = e.args[0]
-        self.assertEqual(code, 'float argument required, not str')
+            b = True
+        self.assertTrue(b,'Str argument should rise TypeError')
         self.assertEqual(output.stdout(), [], 'there should be no stdout')
         self.assertEqual(output.stderr(), [], 'there should be no stderr')
 
