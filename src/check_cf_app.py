@@ -1,9 +1,10 @@
 #!/usr/bin/python
 
 import time
+
 import numpy
 
-from naglib.nagiosplugin import NagiosPlugin
+from src.naglib import NagiosPlugin
 
 
 def line_cleanup(org_line):

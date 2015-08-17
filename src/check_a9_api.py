@@ -13,11 +13,10 @@ cat  $TMP_FILE | /usr/sbin/send_nsca -H <nagios_host>
 __author__ = 'jaclu'
 
 import time
-
 import os
 
 from naglib.nagiosplugin import NagiosPlugin
-from naglib.timeunits import TimeUnits
+from src.naglib.timeunits import TimeUnits
 
 
 def extract_cloud_foundry_error_details(s):

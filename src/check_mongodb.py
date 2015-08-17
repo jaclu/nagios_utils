@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 
-from naglib.nagiosplugin import NagiosPlugin
 import tempfile
+
+from src.naglib import NagiosPlugin
 
 
 # TODO write unittests

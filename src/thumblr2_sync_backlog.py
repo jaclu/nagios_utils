@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 
-from naglib.nagiosplugin import NagiosPlugin
-from naglib.timeunits import TimeUnits
-
 import time
 import os
 import stat
+
+from naglib.nagiosplugin import NagiosPlugin
+from src.naglib.timeunits import TimeUnits
 
 
 def file_age_in_seconds(pathname):

@@ -3,7 +3,7 @@
 import datetime
 
 from naglib.nagiosplugin import NagiosPlugin
-from naglib.timeunits import TimeUnits
+from src.naglib.timeunits import TimeUnits
 
 
 # TODO write unittests

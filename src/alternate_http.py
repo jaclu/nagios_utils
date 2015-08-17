@@ -6,7 +6,7 @@ If you cant install the nagios check_http you can use this instead...
 
 import time
 
-from naglib.nagiosplugin import NagiosPlugin
+from src.naglib import NagiosPlugin
 
 
 class CheckAlternateHttp(NagiosPlugin):

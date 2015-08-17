@@ -9,7 +9,7 @@
 """
 
 
-from naglib.nagiosplugin import NagiosPlugin
+from src.naglib import NagiosPlugin
 
 
 class CheckPortalRev(NagiosPlugin):
