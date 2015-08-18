@@ -8,7 +8,7 @@ from naglib.nagiosplugin import NagiosPlugin
 
 # TODO write unittests
 class RestartNeeded(NagiosPlugin):
-    VERSION = '1.0.2'
+    VERSION = '1.1.0'
     HELP = """This is some more info on this specific plugin"""
 
     def workload(self):
