@@ -16,7 +16,7 @@ import time
 import os
 
 from naglib.nagiosplugin import NagiosPlugin
-from src.naglib.timeunits import TimeUnits
+from naglib.timeunits import TimeUnits
 
 
 def extract_cloud_foundry_error_details(s):

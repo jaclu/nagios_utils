@@ -7,8 +7,8 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.tests.stdout_redirector import Capturing
-from src.naglib import GenericRunner, NAG_MESSAGES, NAG_OK, NAG_CRITICAL, NAG_WARNING
+from tests.stdout_redirector import Capturing
+from naglib.nagiosplugin import GenericRunner, NAG_MESSAGES, NAG_OK, NAG_CRITICAL, NAG_WARNING
 
 
 class TestNagiospluginGenericRunner(TestCase):

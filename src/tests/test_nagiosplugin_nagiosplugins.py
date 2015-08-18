@@ -8,8 +8,8 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.tests.stdout_redirector import Capturing
-from src.naglib import NagiosPlugin, NAG_MESSAGES, NAG_OK
+from tests.stdout_redirector import Capturing
+from naglib.nagiosplugin import NagiosPlugin, NAG_MESSAGES, NAG_OK
 
 dummy_result = 'Dummy command succeeded'
 bad_cmd = '/not/likely/this/exists'

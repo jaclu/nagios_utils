@@ -11,7 +11,7 @@ if that is not found, nothing bad happens, only scaling up of the passive side
 import time
 
 from check_cf_app import CheckCfApp
-from src.naglib import NagiosPlugin
+from naglib import NagiosPlugin
 
 TASK_LIST = 'list'
 TASK_TOGGLE = 'toggle'

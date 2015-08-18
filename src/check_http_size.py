@@ -13,7 +13,7 @@ except:
     from urllib.error import HTTPError
 
 
-from src.naglib import NagiosPlugin
+from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckHttpSize(NagiosPlugin):

@@ -7,7 +7,7 @@ If you cant install the nagios check_http you can use this instead...
 import time
 import urllib2
 
-from src.naglib import NagiosPlugin
+from naglib import NagiosPlugin
 
 
 # TODO write unittests

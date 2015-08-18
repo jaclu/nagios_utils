@@ -2,7 +2,7 @@ __author__ = 'jaclu'
 
 from unittest import TestCase
 
-from src.tests.stdout_redirector import Capturing
+from tests.stdout_redirector import Capturing
 
 
 # make sure dir above is in search path for pytest
@@ -10,7 +10,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.naglib import SubProcessTask, NAG_CRITICAL
+from naglib.nagiosplugin import SubProcessTask, NAG_CRITICAL
 
 dummy_cmd = '/not/likely/this/exists'
 

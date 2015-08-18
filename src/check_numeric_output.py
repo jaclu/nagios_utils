@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from src.naglib import NagiosPlugin
+from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckNumericOutput(NagiosPlugin):

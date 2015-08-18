@@ -3,7 +3,7 @@
 
 import tempfile
 
-from src.naglib import NagiosPlugin
+from naglib import NagiosPlugin
 
 
 # TODO write unittests

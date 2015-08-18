@@ -7,9 +7,9 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.tests.stdout_redirector import Capturing
-from src.naglib import NAG_MESSAGES, NAG_OK, NAG_WARNING, NAG_CRITICAL
-from src.check_file_exists import CheckFileExists
+from tests.stdout_redirector import Capturing
+from naglib.nagiosplugin import NAG_MESSAGES, NAG_OK, NAG_WARNING, NAG_CRITICAL
+from check_file_exists import CheckFileExists
 
 
 MISSING_FILE = '/not/likely/this/exists'

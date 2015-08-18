@@ -5,7 +5,7 @@ import os
 import time
 
 from naglib.nagiosplugin import NagiosPlugin
-from src.naglib.timeunits import TimeUnits
+from naglib.timeunits import TimeUnits
 
 
 class CheckFileAgeUnits(NagiosPlugin):

@@ -8,10 +8,10 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.tests.stdout_redirector import Capturing
-from src.naglib import NAG_OK
+from tests.stdout_redirector import Capturing
+from naglib.nagiosplugin import NAG_OK
 
-from src.check_a9_api import CheckAny9Api
+from check_a9_api import CheckAny9Api
 
 # TODO more tests needed
 class TestCheckAny9Api(TestCase):

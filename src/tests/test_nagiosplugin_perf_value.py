@@ -8,7 +8,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.naglib import _perf_value
+from naglib.nagiosplugin import _perf_value
 
 
 

@@ -7,9 +7,9 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.naglib import NAG_MESSAGES, NAG_OK, NAG_CRITICAL
-from src.tests.stdout_redirector import Capturing
-from src.check_http_size import CheckHttpSize
+from naglib.nagiosplugin import NAG_MESSAGES, NAG_OK, NAG_CRITICAL
+from tests.stdout_redirector import Capturing
+from check_http_size import CheckHttpSize
 
 class TestCheckHttpSize(TestCase):
     def test_no_param(self):

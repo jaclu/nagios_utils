@@ -5,7 +5,7 @@ import os
 import stat
 
 from naglib.nagiosplugin import NagiosPlugin
-from src.naglib.timeunits import TimeUnits
+from naglib.timeunits import TimeUnits
 
 
 def file_age_in_seconds(pathname):

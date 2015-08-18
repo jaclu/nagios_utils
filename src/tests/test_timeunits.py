@@ -9,7 +9,7 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.naglib.timeunits import TimeUnits
+from naglib.timeunits import TimeUnits
 
 
 class TestTimeunits(TestCase):

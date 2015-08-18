@@ -6,9 +6,9 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 
-from src.check_portal_rev import CheckPortalRev
-from src.naglib import NAG_MESSAGES, NAG_OK, NAG_CRITICAL
-from src.tests.stdout_redirector import Capturing
+from check_portal_rev import CheckPortalRev
+from naglib.nagiosplugin import NAG_MESSAGES, NAG_OK, NAG_CRITICAL
+from tests.stdout_redirector import Capturing
 __author__ = 'jaclu'
 
 

@@ -7,10 +7,10 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.tests.stdout_redirector import Capturing
-from src.naglib import NAG_MESSAGES, NAG_OK, NAG_CRITICAL
+from tests.stdout_redirector import Capturing
+from naglib.nagiosplugin import NAG_MESSAGES, NAG_OK, NAG_CRITICAL
 
-from src.alternate_http import CheckAlternateHttp
+from alternate_http import CheckAlternateHttp
 
 
 class TestAlternateHttp(TestCase):

@@ -5,9 +5,9 @@ import os
 import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from src.check_numeric_output import CheckNumericOutput
-from src.naglib import NAG_MESSAGES, NAG_OK, NAG_CRITICAL, NAG_WARNING
-from src.tests.stdout_redirector import Capturing
+from check_numeric_output import CheckNumericOutput
+from naglib.nagiosplugin import NAG_MESSAGES, NAG_OK, NAG_CRITICAL, NAG_WARNING
+from tests.stdout_redirector import Capturing
 
 
 __author__ = 'jaclu'
