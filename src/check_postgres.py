@@ -7,7 +7,7 @@
 
 #  -U thumblr -P sdkhjkh54df -d thumblr2 -Q 'select count(*) from plug_uris_uri' -c 'x > 10'
 
-from naglib import NagiosPlugin
+from naglib.nagiosplugin import NagiosPlugin
 
 
 def cmd_strip_password(cmd):

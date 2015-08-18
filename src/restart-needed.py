@@ -3,7 +3,7 @@
 import os
 import platform
 
-from naglib import NagiosPlugin
+from naglib.nagiosplugin import NagiosPlugin
 
 
 # TODO write unittests

@@ -4,7 +4,7 @@ import time
 
 import numpy
 
-from naglib import NagiosPlugin
+from naglib.nagiosplugin import NagiosPlugin
 
 
 def line_cleanup(org_line):
