@@ -94,3 +94,13 @@ class TestAlternateHttp(TestCase):
         self.assertEqual(output.stdout(), [], 'there should be no stdout output')
         self.assertEqual(output.stderr(), [], 'there should be no stderr output')
 
+
+    def test_invalid_host(self):
+        lbl = NAG_MESSAGES[NAG_CRITICAL]
+        with Capturing() as output:
+            code, msg = CheckAlternateHttp(['-u', 'http://not.reaaly.google.not.here' , '-r', '<title>Google</title>']).run()
+        self.assertEqual(code, NAG_CRITICAL)
+        self.assertEqual(output.stdout(), [], 'there should be no stdout output')
+        self.assertEqual(output.stderr(), [], 'there should be no stderr output')
+        self.assertEqual(msg.split(':')[0], lbl)
+

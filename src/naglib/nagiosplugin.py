@@ -107,7 +107,7 @@ class GenericRunner(object):
             u = ('%s%s' % (host, url)).strip()
             page = requests.get(u,timeout=10)
         except requests.exceptions.ConnectionError as e:
-            self.exit_crit('Connection error')
+            self.exit_crit('Connection error %s' % e.args[0])
         except requests.exceptions.Timeout as e:
             self.exit_warn('Timeout')
         except:
