@@ -100,7 +100,7 @@ class GenericRunner(object):
                 self.log(self.HELP)
             raise #SystemExit(0) # exiting program after displaying help
 
-    def url_get(self, host, url='/'):
+    def url_get(self, host, url=''):
         if host.find('http') < 0:
             host = 'http://' + host
         try:
