@@ -12,10 +12,10 @@ from naglib.nagiosplugin import NagiosPlugin
 
 # TODO write unittests
 class Any9Status(NagiosPlugin):
-    VERSION = '1.1.0'
+    VERSION = '1.1.1'
 
     def custom_options(self, parser):
-        parser.add_option("-u", '--url', dest="url")
+        parser.add_option("-u", '--url', dest="url", default="http://status.anynines.com")
 
     def workload(self):
         if not self.options.url:
@@ -32,6 +32,7 @@ class Any9Status(NagiosPlugin):
             module = ''
             try:
                 module = s.split('\n')[1].strip()
+                self.log('processing %s' % module, 2)
                 status = s.split('<span class="component-status">')[1].split('</')[0].strip()
             except:
                 self.exit_crit('Could not interperate output from: %s' % self.options.url)
