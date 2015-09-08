@@ -24,6 +24,8 @@ def line_cleanup(org_line):
 
 MAX_INSTANCES = 20
 DELAY_BETWEEN_SCALEUPS = 120
+SCALE_UP = 40
+SCALE_DOWN = 15
 
 # TODO write unittests
 class CheckCfApp(NagiosPlugin):
@@ -112,12 +114,12 @@ Monitors a cloud fusion app for important stats
         msg = 'Instances:%i/%i maxload:%.1f avgload:%.1f' % (run_count, inst_count, max_load, avg_load)
         self.add_perf_data('maxload', max_load, self.options.warning_load, self.options.critical_load, '0')
         self.add_perf_data('avgload', avg_load, self.options.warning_load, self.options.critical_load, '0')
-        if ((avg_load > 14) and (inst_count < MAX_INSTANCES)) or inst_count < 2: # 40
+        if ((avg_load > SCALE_UP) and (inst_count < MAX_INSTANCES)) or inst_count < 2: # 40
             new_instances = inst_count + 1
-            if avg_load > 90:
+            if avg_load > (2 * SCALE_UP):
                 # grow quicker for really high spikes...
                 new_instances += 1
-        elif (avg_load < 10) and (inst_count > 2): # 15
+        elif (avg_load < SCALE_DOWN) and (inst_count > 2): # 15
             new_instances = inst_count - 1
         else:
             new_instances = 0
@@ -149,7 +151,7 @@ Monitors a cloud fusion app for important stats
         cmd = '%s scale -i %i %s' % (self.options.command, new_instances, appname)
         stdout = self.cmd_execute_abort_on_error(cmd, 15)
         open(touchfile,'w').write('')
-        line = '%s %i -> %i\n' % (appname, inst_count, new_instances)
+        line = '%s %s %i -> %i\n' % (time.asctime(), appname, inst_count, new_instances)
         open(self.options.logfile, 'a').write(line)
         return True
 
