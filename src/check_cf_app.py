@@ -47,6 +47,7 @@ Monitors a cloud fusion app for important stats
         parser2.add_option('-I', '--inst-crit', dest='crit_instances', type='int', default=0)
         parser2.add_option("-p", '--ping', action="store_true", dest="do_ping", default=False)
         parser2.add_option("-a", '--autoscale', action="store_true", dest="autoscale", default=False)
+        parser2.add_option('-l', '--logfile', dest='logfile', default='/var/log/cf-autoscaling')
 
     def workload(self):
         stdout = ''
@@ -121,7 +122,9 @@ Monitors a cloud fusion app for important stats
         else:
             new_instances = 0
         if new_instances and self.options.autoscale:
-            self.dont_rescale_to_often(appname, inst_count, new_instances)
+            if self.dont_rescale_to_often(appname, inst_count, new_instances):
+                msg = 'autoscaled app %i -> %i' % (inst_count, new_instances)
+                self.exit_ok(msg)
         if max_load >= self.options.critical_load:
             self.exit_crit(msg + ' ERR: load max_load over limit!')
         if run_count < self.options.crit_instances:
@@ -141,12 +144,15 @@ Monitors a cloud fusion app for important stats
                 age = time.time() - os.path.getmtime(touchfile)
                 if age < DELAY_BETWEEN_SCALEUPS:
                     self.log('skipping automatic scale up, need to wait %i seconds after previous increase' % DELAY_BETWEEN_SCALEUPS, 1)
-                    return
+                    return False
 
         self.log('doing autoscale %i -> %i' % (inst_count, new_instances), 1)
         cmd = '%s scale -i %i %s' % (self.options.command, new_instances, appname)
         stdout = self.cmd_execute_abort_on_error(cmd, 15)
         open(touchfile,'w').write('')
+        line = '%s %i -> %i\n' % (appname, inst_count, new_instances)
+        open(self.options.logfile, 'a').write(line)
+        return True
 
 if __name__ == "__main__":
     CheckCfApp().run(standalone=True)
