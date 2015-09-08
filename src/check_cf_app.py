@@ -136,15 +136,14 @@ Monitors a cloud fusion app for important stats
         self.exit_ok(msg)
 
     def dont_rescale_to_often(self, appname, inst_count, new_instances):
-        if new_instances > inst_count:
+        touchfile = '%s/check_cf_app-%s' % ((tempfile.gettempdir() or '/tmp'), appname)
+        if (new_instances > inst_count) and os.path.exists(touchfile):
             # scale up triggers a load peak in the new instance, dont let that fool us
             # to continue to scale up
-            touchfile = '%s/check_cf_app-%s' % ((tempfile.gettempdir() or '/tmp'), appname)
-            if os.path.exists(touchfile):
-                age = time.time() - os.path.getmtime(touchfile)
-                if age < DELAY_BETWEEN_SCALEUPS:
-                    self.log('skipping automatic scale up, need to wait %i seconds after previous increase' % DELAY_BETWEEN_SCALEUPS, 1)
-                    return False
+            age = time.time() - os.path.getmtime(touchfile)
+            if age < DELAY_BETWEEN_SCALEUPS:
+                self.log('skipping automatic scale up, need to wait %i seconds after previous increase' % DELAY_BETWEEN_SCALEUPS, 1)
+                return False
 
         self.log('doing autoscale %i -> %i' % (inst_count, new_instances), 1)
         cmd = '%s scale -i %i %s' % (self.options.command, new_instances, appname)
