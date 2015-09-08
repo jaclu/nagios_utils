@@ -39,7 +39,7 @@ class PortalToggler(NagiosPlugin):
     APP_PORTAL = 'portal'
     APP_BOTTER = 'botter'
     APPS = (APP_BOTTER, APP_PORTAL, APP_API, APP_WEB)
-    INSTANCES = {APP_BOTTER: 6, APP_PORTAL: 3, APP_API: 4, APP_WEB: 3}  # this also defines the scale - # instances
+    INSTANCES = {APP_BOTTER: 3, APP_PORTAL: 3, APP_API: 3, APP_WEB: 3}  # this also defines the scale - # instances
     GROUPS = ('blue', 'green')
 
     PROC_TIMEOUT = 900

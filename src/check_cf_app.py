@@ -1,7 +1,8 @@
 #!/usr/bin/python
 
+import os
+import tempfile
 import time
-
 import numpy
 
 from naglib.nagiosplugin import NagiosPlugin
@@ -21,6 +22,9 @@ def line_cleanup(org_line):
     return line.strip()
 
 
+MAX_INSTANCES = 20
+DELAY_BETWEEN_SCALEUPS = 120
+
 # TODO write unittests
 class CheckCfApp(NagiosPlugin):
     VERSION = '1.4.1'  # added ping timeout stats update
@@ -31,6 +35,7 @@ Monitors a cloud fusion app for important stats
   -C command used to interact with Cloud Foundry (default is 'cf')
   -i fewer running instances triggers warning
   -I fewer running instances triggers critical
+  -a autoscale app - decrease if load < 15 increase if load > 40
 """
 
     def custom_options(self, parser2):
@@ -41,6 +46,7 @@ Monitors a cloud fusion app for important stats
         parser2.add_option('-i', '--inst-warn', dest='warn_instances', type='int', default=0)
         parser2.add_option('-I', '--inst-crit', dest='crit_instances', type='int', default=0)
         parser2.add_option("-p", '--ping', action="store_true", dest="do_ping", default=False)
+        parser2.add_option("-a", '--autoscale', action="store_true", dest="autoscale", default=False)
 
     def workload(self):
         stdout = ''
@@ -105,6 +111,17 @@ Monitors a cloud fusion app for important stats
         msg = 'Instances:%i/%i maxload:%.1f avgload:%.1f' % (run_count, inst_count, max_load, avg_load)
         self.add_perf_data('maxload', max_load, self.options.warning_load, self.options.critical_load, '0')
         self.add_perf_data('avgload', avg_load, self.options.warning_load, self.options.critical_load, '0')
+        if ((avg_load > 40) and (inst_count < MAX_INSTANCES)) or inst_count < 2:
+            new_instances = inst_count + 1
+            if avg_load > 90:
+                # grow quicker for really high spikes...
+                new_instances += 1
+        elif (avg_load < 15) and (inst_count > 2):
+            new_instances = inst_count - 1
+        else:
+            new_instances = 0
+        if new_instances and self.options.autoscale:
+            self.dont_rescale_to_often(appname, inst_count, new_instances)
         if max_load >= self.options.critical_load:
             self.exit_crit(msg + ' ERR: load max_load over limit!')
         if run_count < self.options.crit_instances:
@@ -115,6 +132,21 @@ Monitors a cloud fusion app for important stats
             self.exit_warn(msg + ' WARN: load max_load over limit!')
         self.exit_ok(msg)
 
+    def dont_rescale_to_often(self, appname, inst_count, new_instances):
+        if new_instances > inst_count:
+            # scale up triggers a load peak in the new instance, dont let that fool us
+            # to continue to scale up
+            touchfile = '%s/check_cf_app-%s' % ((tempfile.gettempdir() or '/tmp'), appname)
+            if os.path.exists(touchfile):
+                age = time.time() - os.path.getmtime(touchfile)
+                if age < DELAY_BETWEEN_SCALEUPS:
+                    self.log('skipping automatic scale up, need to wait %i seconds after previous increase' % DELAY_BETWEEN_SCALEUPS, 1)
+                    return
+
+        self.log('doing autoscale %i -> %i' % (inst_count, new_instances), 1)
+        cmd = '%s scale -i %i %s' % (self.options.command, new_instances, appname)
+        stdout = self.cmd_execute_abort_on_error(cmd, 15)
+        open(touchfile,'w').write('')
 
 if __name__ == "__main__":
     CheckCfApp().run(standalone=True)
