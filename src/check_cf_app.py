@@ -22,8 +22,9 @@ def line_cleanup(org_line):
     return line.strip()
 
 
-MAX_INSTANCES = 20
+MAX_INSTANCES = 18
 DELAY_BETWEEN_SCALEUPS = 120
+GROWTH_RATE = 4
 SCALE_UP = 40
 SCALE_DOWN = 4
 
@@ -115,10 +116,10 @@ Monitors a cloud fusion app for important stats
         self.add_perf_data('maxload', max_load, self.options.warning_load, self.options.critical_load, '0')
         self.add_perf_data('avgload', avg_load, self.options.warning_load, self.options.critical_load, '0')
         if ((avg_load > SCALE_UP) and (inst_count < MAX_INSTANCES)) or inst_count < 2: # 40
-            new_instances = inst_count + 2
+            new_instances = inst_count + GROWTH_RATE
             if avg_load > (2 * SCALE_UP):
                 # grow quicker for really high spikes...
-                new_instances += 2
+                new_instances += GROWTH_RATE
         elif (avg_load < SCALE_DOWN) and (inst_count > 2): # 15
             new_instances = inst_count - 1
         else:
