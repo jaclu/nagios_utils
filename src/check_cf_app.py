@@ -24,7 +24,7 @@ def line_cleanup(org_line):
 
 MAX_INSTANCES = 20
 DELAY_BETWEEN_SCALEUPS = 120
-SCALE_UP = 25
+SCALE_UP = 40
 SCALE_DOWN = 4
 
 # TODO write unittests
