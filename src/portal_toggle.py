@@ -39,7 +39,7 @@ class PortalToggler(NagiosPlugin):
     APP_PORTAL = 'portal'
     APP_BOTTER = 'botter'
     APPS = (APP_BOTTER, APP_PORTAL, APP_API, APP_WEB)
-    INSTANCES = {APP_BOTTER: 3, APP_PORTAL: 3, APP_API: 3, APP_WEB: 3}  # this also defines the scale - # instances
+    INSTANCES = {APP_BOTTER: 3, APP_PORTAL: 3, APP_API: 3, APP_WEB: 2}  # this also defines the scale - # instances
     GROUPS = ('blue', 'green')
 
     PROC_TIMEOUT = 900
@@ -120,7 +120,7 @@ class PortalToggler(NagiosPlugin):
             if startup:
                 scale = self.INSTANCES[app]
             else:
-                scale = 1
+                scale = 2
             self.log('    scaling %s to %i instances and restarting' % (app_name, scale), 2)
             self.scale_app(app_name, scale)
             cmd = '%s restart %s' % (self.options.command, app_name)
