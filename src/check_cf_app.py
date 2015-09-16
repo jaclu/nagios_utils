@@ -42,15 +42,23 @@ Monitors a cloud fusion app for important stats
 """
 
     def custom_options(self, parser2):
-        parser2.add_option('-w', '--warning', dest='warning_load', type='float', default=50)
-        parser2.add_option('-c', '--critical', dest='critical_load', type='float', default=90)
         parser2.add_option("-C", '--command', dest='command', default='cf')
-        parser2.add_option("-s", '--space', dest='space')
+        parser2.add_option("-s", '--space',   dest='space')
+
+        parser2.add_option("-S", '--scale',   dest='scale', type='int', default=0)
+        parser2.add_option("-r", '--restart', dest="restart", action="store_true", default=False)
+
+        parser2.add_option("-p", '--ping',     dest="do_ping", action="store_true", default=False)
+
+        parser2.add_option('-w', '--warning',  dest='warning_load', type='float', default=50)
+        parser2.add_option('-c', '--critical', dest='critical_load', type='float', default=90)
+
         parser2.add_option('-i', '--inst-warn', dest='warn_instances', type='int', default=0)
         parser2.add_option('-I', '--inst-crit', dest='crit_instances', type='int', default=0)
-        parser2.add_option("-p", '--ping', action="store_true", dest="do_ping", default=False)
-        parser2.add_option("-a", '--autoscale', action="store_true", dest="autoscale", default=False)
-        parser2.add_option('-l', '--logfile', dest='logfile', default='/var/log/cf-autoscaling')
+
+        parser2.add_option("-a", '--autoscale', dest="autoscale", action="store_true", default=False)
+        parser2.add_option('-l', '--logfile',   dest='logfile', default='/var/log/cf-autoscaling')
+
 
     def workload(self):
         stdout = ''
@@ -66,6 +74,25 @@ Monitors a cloud fusion app for important stats
             self.log('Will change space to  %s' % self.options.space)
             stdout = self.cmd_execute_abort_on_error(cmd)
 
+        #
+        # Scaling and restart are "only actions" and app will terminate after they are done.
+        #
+        if self.options.scale or self.options.restart:
+            # prevent autoscaling from happening right after restart/scaling
+            touchfile = self.scaling_blocked_file(appname)
+            open(touchfile,'w').write('')
+
+            msg = ''
+            if self.options.scale:
+                cmd = '%s scale -i %i %s' % (self.options.command, self.options.scale, appname)
+                stdout = self.cmd_execute_abort_on_error(cmd)
+                msg = 'scaled to %i' % self.options.scale
+            if self.options.restart:
+                cmd = '%s restart %s' % (self.options.command, appname)
+                stdout = self.cmd_execute_abort_on_error(cmd)
+                msg += ' restarted' % self.options.scale
+            self.exit_ok(msg)
+
         cmd = '%s app %s' % (self.options.command, appname)
         self.log('Will run cf app',)
         t1 = time.time()
@@ -80,6 +107,10 @@ Monitors a cloud fusion app for important stats
             self.add_perf_data('response time', t2, 5, 20, '0')
             self.exit_ok('Response time logged')
 
+
+        #
+        #  Calculate avg & max load
+        #
         loads = []
         max_load = inst_count = run_count = 0
         for org_line in stdout.split('\n'):
@@ -139,7 +170,7 @@ Monitors a cloud fusion app for important stats
         self.exit_ok(msg)
 
     def dont_rescale_to_often(self, appname, inst_count, new_instances):
-        touchfile = '%s/check_cf_app-%s' % ((tempfile.gettempdir() or '/tmp'), appname)
+        touchfile = self.scaling_blocked_file(appname)
         if (new_instances > inst_count) and os.path.exists(touchfile):
             # scale up triggers a load peak in the new instance, dont let that fool us
             # to continue to scale up
@@ -155,6 +186,11 @@ Monitors a cloud fusion app for important stats
         line = '%s %s %i -> %i\n' % (time.asctime(), appname, inst_count, new_instances)
         open(self.options.logfile, 'a').write(line)
         return True
+
+
+    def scaling_blocked_file(self, appname):
+        touchfile = '%s/check_cf_app-%s' % ((tempfile.gettempdir() or '/tmp'), appname)
+        return touchfile
 
 if __name__ == "__main__":
     CheckCfApp().run(standalone=True)
