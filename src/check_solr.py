@@ -49,7 +49,7 @@ class CheckSolr(NagiosPlugin):
         if self.options.verbose > 1:
             print 'url: %s' % url
             if self.options.count:
-                print 'expected item count: %i' % count  # TODO count isnt defined
+                print 'expected item count: %i' % self.options.count  # TODO count isnt defined
 
         t1 = time.time()
         content = self.check_url(url)
