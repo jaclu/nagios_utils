@@ -14,9 +14,9 @@ from naglib.nagiosplugin import NagiosPlugin
 
 # TODO write unittests
 class CheckSolr(NagiosPlugin):
-    VERSION = '1.1.3'
-    #DEFAULT_REL_URL = '/solr/search/select?q=*:*&rows=0'
-    DEFAULT_REL_URL = '/solr/search_1/select?q=*:*&rows=0'
+    VERSION = '1.1.4'
+    DEFAULT_REL_URL = '/solr/search/select?q=*:*&rows=0'
+    #DEFAULT_REL_URL = '/solr/search_1/select?q=*:*&rows=0'
     CMD_LINE_HINT = 'url'
     HELP = """
     if only http://adr[:port] is used as url
