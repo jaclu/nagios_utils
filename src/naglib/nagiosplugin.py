@@ -113,7 +113,7 @@ class GenericRunner(object):
         except:
             self.exit_crit('Unknown request error')
         if not page.status_code == 200:
-            self.exit_crit('HTML response not 200')
+            self.exit_crit('HTML response not 200, was: %s' % page.status_code)
         html = page.text
         return html
 
