@@ -13,7 +13,7 @@ from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckPortalRev(NagiosPlugin):
-    VERSION = '1.1.0'
+    VERSION = '1.1.1' # bad revision triggers warn instead of crit
     DESCRIPTION = "Displays portal version"
     CMD_LINE_HINT = 'host'
     ARGC = 1
@@ -40,7 +40,7 @@ class CheckPortalRev(NagiosPlugin):
 
         if self.options.revision:
             if rev != self.options.revision:
-                self.exit_crit('Revision: %s (expected: %s)' % (rev, self.options.revision))
+                self.exit_warn('Revision: %s (expected: %s)' % (rev, self.options.revision))
 
         if self.options.build_time:
             if build_time.find(self.options.build_time) < 0:
