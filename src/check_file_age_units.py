@@ -9,7 +9,7 @@ from naglib.timeunits import TimeUnits
 
 
 class CheckFileAgeUnits(NagiosPlugin):
-    VERSION = '3.4.2'  # 2015-04-19 jaclu trying to fix "Check output not found in output of MRPE" error
+    VERSION = '3.5.0'  # 2016-05-02 jaclu added option -m
     HELP = """
 Similar to standard plugin check_file_age, but here we can use units and not only use seconds
   default is seconds
@@ -35,6 +35,8 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         parser.add_option('-w', dest='age_warn')
         parser.add_option('-c', dest='age_crit')
         parser.add_option("-W", '--warn-on-missing', action="store_true", dest="missing_warn", default=False)
+        parser.add_option("-m", "--min-age", action="store_true", dest="age_min", default=False,
+                          help="Warn if age is less than given age")
         parser.add_option('-s', '--size-min', dest='size_min', default=-1, type="int",
                           help='minimal size of file that is accepted')
         parser.add_option('-S', '--size-max', dest='size_max', default=-1, type="int",
@@ -90,8 +92,12 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
             self.log('warn level: %s' % warn.get(), 1)
         self.log('crit level: %s' % crit.get(), 1)
 
-        if warn and (warn >= crit):
-            self.exit_crit('warning age must be less than critical age')
+        if self.options.age_min:
+            if warn and (warn <= crit):
+                self.exit_crit('warning age must be higher than critical age')
+        else:
+            if warn and (warn >= crit):
+                self.exit_crit('warning age must be less than critical age')
 
         last_changed = os.stat(fname).st_mtime
         self.log('last changed timestamp for file: %s' % last_changed, 2)
@@ -99,10 +105,16 @@ Similar to standard plugin check_file_age, but here we can use units and not onl
         self.add_perf_data('age', age.value, warn.value, crit.value, 0)
         self.log('File age: %s' % age, 2)
         msg = 'Age of file %s is %s' % (fname, age.get())
-        if age > crit:
-            self.exit_crit(msg)
-        elif warn.value and (age > warn):
-            self.exit_warn(msg)
+        if self.options.age_min:
+            if age < crit:
+                self.exit_crit(msg)
+            elif warn.value and (age < warn):
+                self.exit_warn(msg)
+        else:
+            if age > crit:
+                self.exit_crit(msg)
+            elif warn.value and (age > warn):
+                self.exit_warn(msg)
         self.exit_ok(msg)
 
     def check_sorted_path(self):
