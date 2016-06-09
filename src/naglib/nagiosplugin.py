@@ -131,6 +131,11 @@ class GenericRunner(object):
     def exit_crit(self, msg):
         self._exit(NAG_CRITICAL, '%s: %s' % (NAG_MESSAGES[NAG_CRITICAL], msg))
 
+    def exit_help(self, msg):
+        self.parser.print_help()
+        print('')
+        self.exit_crit(msg)
+
     def _exit(self, code, msg):
         if code not in NAG_RESP_CLASSES.keys():
             self.exit_crit('Bad exit code: %s' % code)
@@ -303,8 +308,8 @@ class NagiosPlugin(SubProcessTask):
                 raise  # honors the sys.exit(code) call...
             else:
                 return self._result
-        except:
-            self.exit_crit('Plugin implementation crashed!')
+        # except:
+        #     self.exit_crit('Plugin implementation crashed!')
         return
 
     def show_options(self):
