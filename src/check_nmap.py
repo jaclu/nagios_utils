@@ -4,8 +4,15 @@ If you cant install the nagios check_http you can use this instead...
 
 """
 
-import nmap
+import sys
 import time
+
+try:
+    import nmap
+except:
+    print('ERROR: Missing dependency, do: pip install python-nmap')
+    sys.exit(1)
+
 
 from naglib.nagiosplugin import NagiosPlugin
 
