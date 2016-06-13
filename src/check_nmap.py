@@ -18,7 +18,7 @@ from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckNmap(NagiosPlugin):
-    VERSION = '0.1.1' # fixed closed port check
+    VERSION = '0.1.2' # renamed variables for storing test fails
     CMD_LINE_HINT = 'hostname'
 
     def custom_options(self, parser):
@@ -40,27 +40,27 @@ class CheckNmap(NagiosPlugin):
 
         t1 = time.time()
 
-        bad_open = []
+        not_open = []
         if self.options.listening:
             nm.scan(hostname,arguments='-p %s' % self.options.listening)
             #nm.scan(hostname,arguments='-p %s' % self.options.blocked)
             ip = nm._scan_result['scan'].keys()[0]
             for port in nm[ip]['tcp'].keys():
                 if nm[ip]['tcp'][port]['state'] != 'open':
-                    bad_open.append(str(port))
-        if bad_open:
-            msg.append('should be open: %s' % ','.join(bad_open))
+                    not_open.append(str(port))
+        if not_open:
+            msg.append('should be open: %s' % ','.join(not_open.sort()))
 
-        bad_closed = []
+        not_closed = []
         if self.options.closed:
             nm.scan(hostname,arguments='-p %s' % self.options.closed)
             #nm.scan(hostname,arguments='-p %s' % self.options.blocked)
             ip = nm._scan_result['scan'].keys()[0]
             for port in nm[ip]['tcp'].keys():
                 if nm[ip]['tcp'][port]['state'] == 'open':
-                    bad_closed.append(str(port))
-        if bad_closed:
-            msg.append('should be closed: %s' % ','.join(bad_closed))
+                    not_closed.append(str(port))
+        if not_closed:
+            msg.append('should be closed: %s' % ','.join(not_closed.sort()))
 
         if msg:
             self.exit_crit(' '.join(msg))
