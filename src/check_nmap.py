@@ -18,7 +18,7 @@ from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckNmap(NagiosPlugin):
-    VERSION = '0.1.3' # fixed sorting error
+    VERSION = '0.1.4' # detection of failed tests added
     CMD_LINE_HINT = 'hostname'
 
     def custom_options(self, parser):
@@ -43,6 +43,8 @@ class CheckNmap(NagiosPlugin):
         not_open = []
         if self.options.listening:
             nm.scan(hostname,arguments='-p %s' % self.options.listening)
+            if int(nm._scan_result['nmap']['scanstats']['downhosts']):
+                self.exit_crit('Host seems down')
             #nm.scan(hostname,arguments='-p %s' % self.options.blocked)
             ip = nm._scan_result['scan'].keys()[0]
             for port in nm[ip]['tcp'].keys():
@@ -54,7 +56,9 @@ class CheckNmap(NagiosPlugin):
 
         not_closed = []
         if self.options.closed:
-            nm.scan(hostname,arguments='-p %s' % self.options.closed)
+            nm.scan(hostname,arguments='-Pn -p %s' % self.options.closed)
+            if int(nm._scan_result['nmap']['scanstats']['downhosts']):
+                self.exit_crit('Host seems down')
             #nm.scan(hostname,arguments='-p %s' % self.options.blocked)
             ip = nm._scan_result['scan'].keys()[0]
             for port in nm[ip]['tcp'].keys():
