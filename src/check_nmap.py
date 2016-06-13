@@ -18,7 +18,7 @@ from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckNmap(NagiosPlugin):
-    VERSION = '0.1.2' # renamed variables for storing test fails
+    VERSION = '0.1.3' # fixed sorting error
     CMD_LINE_HINT = 'hostname'
 
     def custom_options(self, parser):
@@ -49,7 +49,8 @@ class CheckNmap(NagiosPlugin):
                 if nm[ip]['tcp'][port]['state'] != 'open':
                     not_open.append(str(port))
         if not_open:
-            msg.append('should be open: %s' % ','.join(not_open.sort()))
+            not_open.sort()
+            msg.append('should be open: %s' % ','.join(not_open))
 
         not_closed = []
         if self.options.closed:
@@ -60,7 +61,8 @@ class CheckNmap(NagiosPlugin):
                 if nm[ip]['tcp'][port]['state'] == 'open':
                     not_closed.append(str(port))
         if not_closed:
-            msg.append('should be closed: %s' % ','.join(not_closed.sort()))
+            not_closed.sort()
+            msg.append('should be closed: %s' % ','.join(not_closed))
 
         if msg:
             self.exit_crit(' '.join(msg))
