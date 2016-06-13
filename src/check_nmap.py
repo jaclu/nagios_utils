@@ -18,9 +18,9 @@ from naglib.nagiosplugin import NagiosPlugin
 
 
 class CheckNmap(NagiosPlugin):
-    VERSION = '0.1.4' # added speedup options
+    VERSION = '0.1.5' # updated speedup options
     CMD_LINE_HINT = 'hostname'
-    COMMON_NMAP_OPTIONS = '-T5 -n --max-retries 0'
+    COMMON_NMAP_OPTIONS = '-Pn -T5 -n --max-retries 0'
 
     def custom_options(self, parser):
         parser.add_option("-l", '--listening', dest="listening",
