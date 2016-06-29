@@ -8,7 +8,7 @@ from naglib.nagiosplugin import NagiosPlugin
 
 # TODO write unittests
 class CheckSupervisor(NagiosPlugin):
-    VERSION = '0.0.2'
+    VERSION = '0.0.3'
     DESCRIPTION = "Checks if supervisor is running"
 
     def workload(self):
@@ -18,8 +18,6 @@ class CheckSupervisor(NagiosPlugin):
         if stderr:
             self.exit_crit(stderr)
         elif retcode:
-            self.exit_crit('Check failed')
-        elif not stdout:
             self.exit_crit('supervisord is not running!')
         self.exit_ok('supervisor is running: [%s] %i' % (stdout, len(stdout)))
 
