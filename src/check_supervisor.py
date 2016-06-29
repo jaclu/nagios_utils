@@ -21,7 +21,7 @@ class CheckSupervisor(NagiosPlugin):
             self.exit_crit('Check failed')
         elif not stdout:
             self.exit_crit('supervisord is not running!')
-        self.exit_ok(msg)
+        self.exit_ok('supervisor is running')
 
 if __name__ == "__main__":
     CheckSupervisor().run(standalone=True)
