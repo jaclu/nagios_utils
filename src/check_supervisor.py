@@ -8,11 +8,11 @@ from naglib.nagiosplugin import NagiosPlugin
 
 # TODO write unittests
 class CheckSupervisor(NagiosPlugin):
-    VERSION = '0.0.1'
+    VERSION = '0.0.2'
     DESCRIPTION = "Checks if supervisor is running"
 
     def workload(self):
-        cmd = ' axu |grep supervisord | grep -v grep'
+        cmd = 'ps axu |grep supervisord | grep -v grep'
 
         retcode, stdout, stderr = self.cmd_execute_output(cmd)
         if stderr:
