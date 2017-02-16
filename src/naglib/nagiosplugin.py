@@ -10,7 +10,11 @@ import subprocess
 import sys
 import time
 
-import requests
+try:
+    import requests
+except:
+    print("Missing dependency: requests (pip install requests)")
+    sys.exit(5)
 
 
 # Exit statuses recognized by Nagios
@@ -285,7 +289,7 @@ class NagiosPlugin(SubProcessTask):
       Sample item: ('load1', '1.150', '2.000', '5.000','0')
     """
 
-    BASE_VERSION = '1.6.1'  # added nsca global option
+    BASE_VERSION = '1.6.2'  # added nsca global option
     VERSION = BASE_VERSION
     MSG_LABEL = ''  # optional prefix for the message line
     NO_PARAMS_ERROR = '' # set this if no params triggers error
