@@ -104,7 +104,7 @@ class GenericRunner(object):
                 self.log(self.HELP)
             raise #SystemExit(0) # exiting program after displaying help
 
-    def url_get(self, host, url=''):
+    def url_get(self, host, url='',own_handling_status_error=False):
         if host.find('http') < 0:
             host = 'http://' + host
         try:
@@ -117,6 +117,8 @@ class GenericRunner(object):
         except:
             self.exit_crit('Unknown request error')
         if not page.status_code == 200:
+            if own_handling_status_error:
+                raise
             self.exit_crit('HTML response not 200, was: %s' % page.status_code)
         html = page.text
         return html
